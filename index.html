@@ -3,422 +3,781 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SprachDiktat</title>
+    <title>Sprache zu Text Editor</title>
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { 
-            background-color: #F9F7F1; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 1.2rem 1rem; 
-            color: #2C3539; 
-            margin: 0;
-            min-height: 100vh;
-            box-sizing: border-box;
+        :root {
+            --bg-color: #FBF9F5;
+            --card-bg: #FFFFFF;
+            --text-primary: #1F2937;
+            --text-secondary: #4B5563;
+            --border-color: #E5E7EB;
+            --accent-green: #059669;
+            --accent-green-hover: #047857;
+            --accent-green-light: #ECFDF5;
+            --accent-blue: #2563EB;
+            --accent-blue-hover: #1D4ED8;
+            --accent-red: #DC2626;
+            --accent-red-hover: #B91C1C;
+            --accent-amber: #D97706;
+            --accent-purple: #7C3AED;
+            --shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --font-size-text: 24px;
         }
-        
-        .container { 
-            max-width: 850px; 
-            width: 100%; 
+
+        /* Dark mode variables */
+        body.dark-mode {
+            --bg-color: #121316;
+            --card-bg: #1E2025;
+            --text-primary: #F3F4F6;
+            --text-secondary: #9CA3AF;
+            --border-color: #374151;
+            --accent-green-light: rgba(5, 150, 105, 0.15);
+            --shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-primary);
+            margin: 0;
+            padding: 1.25rem 1rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            gap: 12px;
+        }
+
+        /* Header Section */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 4px;
+        }
+
+        .title-wrapper h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .title-wrapper p {
+            margin: 2px 0 0 0;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+        }
+
+        .top-tools {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            font-size: 1.1rem;
+        }
+
+        .icon-btn:hover {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        /* Status Indicator Bar */
+        .status-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 10px 16px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #9CA3AF;
+            flex-shrink: 0;
+        }
+
+        .status-dot.active {
+            background-color: var(--accent-green);
+            box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.2);
+            animation: pulse-dot 1.6s infinite ease-in-out;
+        }
+
+        @keyframes pulse-dot {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        .status-text {
+            font-size: 0.98rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Punctuation Bar Grid */
+        .punc-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+        }
+
+        .btn-punc {
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 9px 4px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            user-select: none;
+        }
+
+        .btn-punc:hover {
+            border-color: var(--accent-green);
+            background-color: var(--accent-green-light);
+            color: var(--accent-green);
+        }
+
+        .btn-punc:active {
+            transform: scale(0.97);
+        }
+
+        /* Editor Area */
+        .editor-wrapper {
+            position: relative;
             display: flex;
             flex-direction: column;
             flex-grow: 1;
         }
-        
-        h1 {
-            text-align: center; 
-            font-size: 1.8rem; 
-            margin-top: 0;
-            margin-bottom: 0.3rem;
-            color: #2C3539;
-        }
 
-        .status { 
-            text-align: center;
-            font-size: 1.1rem; 
-            margin-bottom: 0.8rem; 
-            color: #666; 
-            font-style: italic; 
-            min-height: 2.2rem; 
-            transition: color 0.3s;
-        }
-
-        .meter-container {
+        .text-box {
             width: 100%;
-            height: 10px;
-            background-color: #E0E0E0;
-            border-radius: 5px;
-            overflow: hidden;
-            margin-bottom: 10px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
-        }
-
-        .meter-bar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #4CAF50, #FFEB3B, #F44336);
-            transition: width 0.1s ease-out;
-            border-radius: 5px;
-        }
-
-        .text-box { 
-            width: 100%; 
             flex-grow: 1;
-            min-height: 220px;
-            font-size: 28px; 
-            line-height: 1.6; 
-            padding: 1.2rem; 
-            border-radius: 12px; 
-            border: 2px solid #DCD7C9; 
-            background-color: #FFFFFF; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
-            resize: none; 
-            color: #1A1A1A; 
+            min-height: 280px;
+            font-size: var(--font-size-text);
+            line-height: 1.65;
+            padding: 1.25rem;
+            border-radius: var(--radius-lg);
+            border: 2px solid var(--border-color);
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-lg);
+            resize: vertical;
+            outline: none;
+            font-family: inherit;
             box-sizing: border-box;
+            white-space: pre-wrap;
         }
-        
-        .text-box:focus { outline: none; border-color: #A3C1AD; }
-        .listening-glow { border-color: #4CAF50; box-shadow: 0 0 15px rgba(76, 175, 80, 0.4); }
-        
+
+        .text-box:focus {
+            border-color: var(--accent-green);
+        }
+
+        .text-box.recording {
+            border-color: var(--accent-green) !important;
+            box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.15) !important;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0 0 var(--radius-md) var(--radius-md);
+            margin-top: -8px;
+            z-index: 1;
+        }
+
+        .font-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-font {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 2px 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        .btn-font:hover {
+            background-color: var(--accent-green-light);
+            border-color: var(--accent-green);
+        }
+
+        /* Button Controls */
         .controls-edit {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
-            margin-top: 12px;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
         }
 
-        .controls-main { 
+        .controls-main {
             display: grid;
-            grid-template-columns: 1fr 1fr; 
-            gap: 10px; 
-            margin-top: 10px; 
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
         }
-        
-        button { 
-            font-size: 1.2rem; 
-            padding: 15px 10px; 
-            border: none; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
+
+        button.action-btn {
+            font-size: 1.05rem;
+            padding: 14px 12px;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
             justify-content: center;
-            gap: 8px; 
-            transition: all 0.2s ease; 
-            font-weight: 600; 
-            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            gap: 8px;
+            font-weight: 600;
+            box-shadow: var(--shadow);
+            font-family: inherit;
         }
-        
-        button:active { transform: translateY(2px); }
-        button:disabled { opacity: 0.4; cursor: not-allowed; }
-        
-        .btn-start { background-color: #4CAF50; color: white; grid-column: 1 / -1; font-size: 1.4rem; padding: 18px 15px;} 
-        .btn-stop { background-color: #E57373; color: white; }
-        .btn-copy { background-color: #64B5F6; color: white; }
-        .btn-save { background-color: #FFB74D; color: #333; }
-        .btn-open { background-color: #BA68C8; color: white; }
 
-        .btn-delete-word { background-color: #ECEFF1; color: #37474F; border: 1px solid #CFD8DC; }
-        .btn-delete-chunk { background-color: #CFD8DC; color: #263238; }
-        .btn-clear-all { background-color: #D32F2F; color: white; } 
-        .btn-undo { background-color: #78909C; color: white; }
+        button.action-btn:active {
+            transform: translateY(1px);
+        }
 
-        @media (max-width: 600px) {
-            h1 { font-size: 1.4rem; }
-            .text-box { font-size: 24px; padding: 0.8rem; }
-            .controls-main, .controls-edit { grid-template-columns: 1fr; gap: 8px; }
-            .btn-start { grid-column: auto; } 
-            button { padding: 14px 10px; font-size: 1.15rem; }
+        button.action-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-start {
+            background-color: var(--accent-green);
+            color: #FFFFFF;
+            grid-column: span 2;
+            font-size: 1.25rem;
+            padding: 16px 15px;
+        }
+
+        .btn-start:hover:not(:disabled) {
+            background-color: var(--accent-green-hover);
+        }
+
+        .btn-stop {
+            background-color: var(--accent-red);
+            color: #FFFFFF;
+        }
+
+        .btn-stop:hover:not(:disabled) {
+            background-color: var(--accent-red-hover);
+        }
+
+        .btn-copy {
+            background-color: var(--accent-blue);
+            color: #FFFFFF;
+        }
+
+        .btn-copy:hover:not(:disabled) {
+            background-color: var(--accent-blue-hover);
+        }
+
+        .btn-save {
+            background-color: var(--accent-amber);
+            color: #FFFFFF;
+        }
+
+        .btn-save:hover:not(:disabled) {
+            background-color: #B45309;
+        }
+
+        .btn-open {
+            background-color: var(--accent-purple);
+            color: #FFFFFF;
+        }
+
+        .btn-open:hover:not(:disabled) {
+            background-color: #6D28D9;
+        }
+
+        .btn-delete-word {
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-delete-word:hover:not(:disabled) {
+            background-color: var(--border-color);
+        }
+
+        .btn-clear-all {
+            background-color: rgba(220, 38, 38, 0.1);
+            color: var(--accent-red);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+        }
+
+        .btn-clear-all:hover:not(:disabled) {
+            background-color: var(--accent-red);
+            color: #FFFFFF;
+        }
+
+        .btn-speak {
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            grid-column: span 2;
+        }
+
+        .btn-speak:hover:not(:disabled) {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .btn-undo {
+            background-color: #4B5563;
+            color: #FFFFFF;
+            grid-column: span 2;
+        }
+
+        .btn-undo:hover:not(:disabled) {
+            background-color: #374151;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1F2937;
+            color: #FFFFFF;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 640px) {
+            body { padding: 0.75rem 0.5rem; }
+            .title-wrapper h1 { font-size: 1.35rem; }
+            .punc-grid { grid-template-columns: repeat(5, 1fr); gap: 4px; }
+            .btn-punc { font-size: 0.85rem; padding: 8px 2px; }
+            .text-box { font-size: 20px; padding: 0.9rem; min-height: 220px; }
+            .controls-main { grid-template-columns: 1fr; gap: 8px; }
+            .btn-start, .btn-speak, .btn-undo { grid-column: span 1; }
+            button.action-btn { padding: 13px 10px; font-size: 1rem; }
         }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h1>SprachDiktat (Diktieren)</h1>
-        <div id="statusText" class="status">Bereit. Klicken Sie auf "Sprechen starten".</div>
-        
-        <div class="meter-container">
-            <div id="meterBar" class="meter-bar"></div>
+        <!-- Top Bar / Header -->
+        <header>
+            <div class="title-wrapper">
+                <h1><i class="fas fa-microphone-alt" style="color: var(--accent-green);"></i> Sprache zu Text Editor</h1>
+                <p>Deutsche Diktierfunktion & Intelligente Textverarbeitung</p>
+            </div>
+            <div class="top-tools">
+                <button class="icon-btn" id="btnThemeToggle" title="Dunkel/Hell-Modus wechseln">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic Status Bar -->
+        <div class="status-container">
+            <div id="statusDot" class="status-dot"></div>
+            <div id="statusText" class="status-text">Bereit. Klicken Sie auf „Sprechen starten“.</div>
         </div>
 
-        <textarea id="resultText" class="text-box" placeholder="Der Text erscheint hier, während Sie sprechen..."></textarea>
-        
-        <!-- Nhóm nút xóa -->
+        <!-- German Punctuation Insertion Grid -->
+        <div class="punc-grid">
+            <button class="btn-punc" onclick="insertSymbol('.')">. Punkt</button>
+            <button class="btn-punc" onclick="insertSymbol(',')">, Komma</button>
+            <button class="btn-punc" onclick="insertSymbol('?')">? Frage</button>
+            <button class="btn-punc" onclick="insertSymbol('!')">! Ausruf</button>
+            <button class="btn-punc" onclick="insertSymbol(':')">: Doppel p.</button>
+
+            <button class="btn-punc" onclick="insertSymbol('...')">... Punkte</button>
+            <button class="btn-punc" onclick="insertSymbol('\"')">" "</button>
+            <button class="btn-punc" onclick="insertSymbol('()')">( )</button>
+            <button class="btn-punc" onclick="insertSymbol('\n- ')">- Strich</button>
+            <button class="btn-punc" onclick="insertSymbol('\n')">↵ Zeile</button>
+        </div>
+
+        <!-- Textarea Editor -->
+        <div class="editor-wrapper">
+            <textarea id="resultText" class="text-box" placeholder="Der Text erscheint hier, sobald Sie sprechen..." spellcheck="true"></textarea>
+            
+            <div class="stats-bar">
+                <span id="wordStats">0 Wörter | 0 Zeichen</span>
+                <div class="font-controls">
+                    <span>Schrift:</span>
+                    <button class="btn-font" onclick="adjustFontSize(-2)">A-</button>
+                    <button class="btn-font" onclick="adjustFontSize(2)">A+</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Editing Controls -->
         <div class="controls-edit">
-            <button id="btnDeleteWord" class="btn-delete-word"><i class="fas fa-backspace"></i> 1 Wort löschen</button>
-            <button id="btnDeleteChunk" class="btn-delete-chunk"><i class="fas fa-outdent"></i> Letzten Satz löschen</button>
-            <button id="btnClearAll" class="btn-clear-all"><i class="fas fa-times-circle"></i> Alles löschen</button>
+            <button id="btnDeleteWord" class="action-btn btn-delete-word">
+                <i class="fas fa-backspace"></i> 1 Wort löschen
+            </button>
+            <button id="btnClearAll" class="action-btn btn-clear-all">
+                <i class="fas fa-trash-alt"></i> Alles löschen
+            </button>
         </div>
 
-        <!-- Nhóm nút chức năng -->
+        <!-- Main Action Buttons -->
         <div class="controls-main">
-            <button id="btnStart" class="btn-start"><i class="fas fa-microphone"></i> Sprechen starten</button>
-            <button id="btnStop" class="btn-stop" disabled><i class="fas fa-stop-circle"></i> Anhalten</button>
-            <button id="btnCopy" class="btn-copy"><i class="fas fa-copy"></i> Kopieren</button>
-            <button id="btnSave" class="btn-save"><i class="fas fa-file-download"></i> Speichern</button>
-            <button id="btnOpen" class="btn-open"><i class="fas fa-folder-open"></i> Öffnen</button>
-            <button id="btnUndo" class="btn-undo" style="display: none; grid-column: 1 / -1;"><i class="fas fa-undo"></i> Rückgängig machen</button>
+            <button id="btnStart" class="action-btn btn-start">
+                <i class="fas fa-microphone"></i> Sprechen starten
+            </button>
+            <button id="btnStop" class="action-btn btn-stop" disabled>
+                <i class="fas fa-stop-circle"></i> Stoppen
+            </button>
+
+            <button id="btnCopy" class="action-btn btn-copy">
+                <i class="fas fa-copy"></i> Text kopieren
+            </button>
+            <button id="btnSave" class="action-btn btn-save">
+                <i class="fas fa-download"></i> Entwurf herunterladen
+            </button>
+
+            <button id="btnOpen" class="action-btn btn-open">
+                <i class="fas fa-folder-open"></i> Entwurf öffnen
+            </button>
+            <button id="btnSpeak" class="action-btn btn-speak">
+                <i class="fas fa-volume-up"></i> Text vorlesen
+            </button>
+
+            <button id="btnUndo" class="action-btn btn-undo" style="display: none;">
+                <i class="fas fa-undo"></i> Wiederherstellen (Gelöschten Text)
+            </button>
         </div>
 
+        <!-- Hidden File Input for Opening Text Files -->
         <input type="file" id="fileInput" accept=".txt" style="display: none;">
     </div>
 
+    <!-- Floating Toast Notification -->
+    <div id="toast" class="toast">
+        <i class="fas fa-info-circle"></i> <span id="toastMsg">Benachrichtigung</span>
+    </div>
+
     <script>
+        // DOM Elements
         const resultText = document.getElementById('resultText');
         const btnStart = document.getElementById('btnStart');
         const btnStop = document.getElementById('btnStop');
         const btnCopy = document.getElementById('btnCopy');
         const btnSave = document.getElementById('btnSave');
         const btnOpen = document.getElementById('btnOpen');
+        const btnSpeak = document.getElementById('btnSpeak');
         const fileInput = document.getElementById('fileInput');
         const btnDeleteWord = document.getElementById('btnDeleteWord');
-        const btnDeleteChunk = document.getElementById('btnDeleteChunk');
         const btnClearAll = document.getElementById('btnClearAll');
         const btnUndo = document.getElementById('btnUndo');
         const statusText = document.getElementById('statusText');
-        const meterBar = document.getElementById('meterBar');
+        const statusDot = document.getElementById('statusDot');
+        const wordStats = document.getElementById('wordStats');
+        const btnThemeToggle = document.getElementById('btnThemeToggle');
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toastMsg');
 
+        // App State
         let isManuallyStopped = true;
-        let chunks = []; 
-        let undoHistory = ''; 
-        let audioCtx, analyser, microphone, stream, animId;
+        let baseText = '';
+        let undoHistory = '';
+        let currentFontSize = 24;
 
-        function notify(message, color) {
+        // Display Toast Notification
+        function showToast(message) {
+            toastMsg.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Set status text and visual indicator
+        function setStatus(message, isError = false) {
             statusText.innerHTML = message;
-            statusText.style.color = color;
+            statusText.style.color = isError ? "var(--accent-red)" : "var(--text-secondary)";
         }
 
-        function renderText(interim = '') {
-            let fullText = chunks.join(' ');
-            if (interim.trim() !== '') {
-                if (fullText !== '') fullText += ' ';
-                fullText += interim.trim();
-            }
-            resultText.value = fullText;
-            resultText.scrollTop = resultText.scrollHeight;
-            localStorage.setItem('voiceDraftGerman', chunks.join(' '));
+        // German Automatic Capitalization Logic
+        function autoCapitalizeGerman(text) {
+            if (!text) return text;
+            // Capitalize first character
+            let str = text.charAt(0).toUpperCase() + text.slice(1);
+            
+            // Capitalize letter after sentence delimiters (. ? ! newline or newline bullet)
+            return str.replace(/([\.\?!\n]\s*|\n-\s*)([a-zäöüß])/g, function(match, p1, p2) {
+                return p1 + p2.toUpperCase();
+            });
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedDraft = localStorage.getItem('voiceDraftGerman');
-            if (savedDraft && savedDraft.trim() !== '') {
-                chunks = [savedDraft.trim()];
-                renderText();
-                notify("Vorheriger Entwurf wurde automatisch wiederhergestellt.", "#4CAF50");
-            }
-        });
+        // Update word & character statistics
+        function updateStats() {
+            const text = resultText.value.trim();
+            const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+            const chars = text.length;
+            wordStats.innerText = `${words} ${words === 1 ? 'Wort' : 'Wörter'} | ${chars} Zeichen`;
+        }
 
+        // Adjust Editor Font Size
+        function adjustFontSize(delta) {
+            currentFontSize = Math.min(Math.max(currentFontSize + delta, 16), 40);
+            resultText.style.fontSize = `${currentFontSize}px`;
+        }
+
+        // Save State for Restoration (Undo)
         function saveStateForUndo() {
             undoHistory = resultText.value;
             btnUndo.style.display = 'flex';
         }
 
+        // Insert Punctuation or Formatting Symbol at Caret Position
+        function insertSymbol(symbol) {
+            saveStateForUndo();
+            const text = resultText.value;
+            const startPos = resultText.selectionStart;
+            const endPos = resultText.selectionEnd;
+
+            let formattedSymbol = symbol;
+            if (symbol === '()') formattedSymbol = ' () ';
+            else if (symbol === '"') formattedSymbol = ' "" ';
+            else if (['.', ',', '?', '!', ':', '...'].includes(symbol)) formattedSymbol = symbol + ' ';
+
+            // Insert at cursor position if focused, else append to end
+            let newText = text;
+            if (startPos || startPos === 0) {
+                newText = text.substring(0, startPos) + formattedSymbol + text.substring(endPos);
+            } else {
+                newText = text.trimEnd() + formattedSymbol;
+            }
+
+            newText = autoCapitalizeGerman(newText);
+            resultText.value = newText;
+            baseText = newText;
+            localStorage.setItem('voiceDraftDe', newText);
+            updateStats();
+            
+            resetMicrophoneIfListening();
+            showToast(`Symbol eingefügt: ${symbol.replace('\n', 'Neue Zeile')}`);
+        }
+
+        // Theme Toggle (Dark/Light)
+        btnThemeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            btnThemeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            localStorage.setItem('voiceDraftTheme', isDark ? 'dark' : 'light');
+        });
+
+        // Load Saved Theme and Draft on Startup
+        window.addEventListener('DOMContentLoaded', () => {
+            // Restore theme
+            if (localStorage.getItem('voiceDraftTheme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                btnThemeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+
+            // Restore draft
+            const savedDraft = localStorage.getItem('voiceDraftDe');
+            if (savedDraft && savedDraft.trim() !== '') {
+                resultText.value = savedDraft;
+                baseText = savedDraft;
+                updateStats();
+                setStatus("Ihr gespeicherter Entwurf wurde automatisch geladen.");
+            }
+        });
+
+        // Restart mic session cleanly if user is actively dictating
         function resetMicrophoneIfListening() {
             if (!isManuallyStopped && recognition) {
-                try { recognition.abort(); } catch(e) { console.log(e); }
+                try { recognition.abort(); } catch(e) {}
             }
         }
 
+        // Manual text input listener
         resultText.addEventListener('input', () => {
-            let val = resultText.value.trim();
-            chunks = val ? [val] : [];
-            localStorage.setItem('voiceDraftGerman', resultText.value);
+            baseText = resultText.value;
+            localStorage.setItem('voiceDraftDe', resultText.value);
+            updateStats();
             resetMicrophoneIfListening();
         });
 
-        async function setupAudioFilter() {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } 
-                });
-
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioCtx.createAnalyser();
-                microphone = audioCtx.createMediaStreamSource(stream);
-                microphone.connect(analyser);
-                analyser.fftSize = 256;
-
-                const bufferLength = analyser.frequencyBinCount;
-                const dataArray = new Uint8Array(bufferLength);
-
-                function drawMeter() {
-                    analyser.getByteFrequencyData(dataArray);
-                    let sum = 0;
-                    for (let i = 0; i < bufferLength; i++) sum += dataArray[i];
-                    let average = sum / bufferLength;
-                    let level = Math.min(100, Math.max(0, (average - 10) * 2.5));
-                    meterBar.style.width = level + '%';
-
-                    if (!isManuallyStopped) animId = requestAnimationFrame(drawMeter);
-                    else meterBar.style.width = '0%';
-                }
-                drawMeter();
-            } catch (err) { console.log("Audio meter error:", err); }
-        }
-
-        function stopAudioFilter() {
-            if (animId) cancelAnimationFrame(animId);
-            if (stream) stream.getTracks().forEach(track => track.stop());
-            if (audioCtx) audioCtx.close();
-            meterBar.style.width = '0%';
-        }
-
+        // Speech Recognition Setup (Web Speech API)
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition;
 
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
-            recognition.continuous = true; 
-            recognition.interimResults = true; 
-            // THAY ĐỔI QUAN TRỌNG: Cấu hình nhận diện tiếng Đức (Đức)
+            // Continuous set to false prevents duplicate text bug on mobile browsers (Chrome Android)
+            recognition.continuous = false;
+            recognition.interimResults = true;
             recognition.lang = 'de-DE';
 
+            let currentSessionFinal = '';
+
             recognition.onstart = function() {
-                notify("Höre zu... <br><span style='font-size: 0.95rem;'>(Aufnahme läuft)</span>", "#4CAF50");
-                resultText.classList.add('listening-glow');
+                setStatus("Aufnahme läuft... <br><span style='font-size: 0.88rem;'>(Sprechen Sie ganz entspannt, Pausen werden abgewartet)</span>");
+                statusDot.classList.add('active');
+                resultText.classList.add('recording');
+
+                currentSessionFinal = '';
                 btnStart.disabled = true;
                 btnStop.disabled = false;
-                setupAudioFilter();
             };
 
             recognition.onresult = function(event) {
-                let interimTranscript = '';
+                let interim = '';
 
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    let transcript = event.results[i][0].transcript;
-                    
                     if (event.results[i].isFinal) {
-                        let cleanText = transcript.trim();
-                        if (cleanText !== '') {
-                            // Tiếng Đức viết hoa danh từ, tuy nhiên ta cứ viết hoa chữ cái đầu câu cho chuẩn
-                            cleanText = cleanText.charAt(0).toUpperCase() + cleanText.slice(1);
-                            chunks.push(cleanText); 
-                        }
+                        currentSessionFinal += event.results[i][0].transcript.trim() + ' ';
                     } else {
-                        interimTranscript += transcript;
+                        interim += event.results[i][0].transcript;
                     }
                 }
-                renderText(interimTranscript);
+
+                let textToShow = baseText;
+
+                if (currentSessionFinal.trim()) {
+                    if (textToShow && !textToShow.endsWith(' ') && !textToShow.endsWith('\n')) {
+                        textToShow += ' ';
+                    }
+                    textToShow += currentSessionFinal.trim();
+                }
+
+                if (interim.trim()) {
+                    if (textToShow && !textToShow.endsWith(' ') && !textToShow.endsWith('\n')) {
+                        textToShow += ' ';
+                    }
+                    textToShow += interim.trim();
+                }
+
+                textToShow = autoCapitalizeGerman(textToShow);
+                resultText.value = textToShow;
+                updateStats();
+                resultText.scrollTop = resultText.scrollHeight;
             };
 
             recognition.onend = function() {
+                // Finalize session baseText
+                baseText = resultText.value;
+                localStorage.setItem('voiceDraftDe', baseText);
+
+                // Auto-restart if not manually stopped by user
                 if (!isManuallyStopped) {
                     try { recognition.start(); } catch (e) {}
                 } else {
-                    notify("Angehalten. Sie können den Text bearbeiten oder kopieren.", "#666");
-                    resultText.classList.remove('listening-glow');
+                    setStatus("Aufnahme gestoppt. Sie können den Text bearbeiten oder kopieren.");
+                    statusDot.classList.remove('active');
+                    resultText.classList.remove('recording');
                     btnStart.disabled = false;
                     btnStop.disabled = true;
-                    stopAudioFilter();
                 }
             };
 
             recognition.onerror = function(event) {
                 if (event.error === 'not-allowed') {
-                    notify("Fehler: Mikrofon-Berechtigung verweigert.", "red");
+                    setStatus("Fehler: Mikrofonzugriff wurde verweigert.", true);
+                    showToast("Bitte erlauben Sie den Mikrofonzugriff in Ihrem Browser.");
                     isManuallyStopped = true;
+                    statusDot.classList.remove('active');
+                    resultText.classList.remove('recording');
                     btnStart.disabled = false;
                     btnStop.disabled = true;
-                    resultText.classList.remove('listening-glow');
-                    stopAudioFilter();
                 }
             };
         } else {
-            notify("Spracherkennung wird von diesem Browser nicht unterstützt.", "red");
+            setStatus("Ihr Browser unterstützt die Spracherkennung leider nicht. Bitte nutzen Sie Google Chrome, Edge oder Safari.", true);
             btnStart.disabled = true;
         }
 
-        btnClearAll.addEventListener('click', () => {
-            if (resultText.value.trim() !== '') {
-                saveStateForUndo();
-                chunks = [];
-                renderText();
-                localStorage.removeItem('voiceDraftGerman');
-                resetMicrophoneIfListening();
-                notify("Text gelöscht.", "#D32F2F");
-            }
-        });
-
-        btnDeleteWord.addEventListener('click', () => {
-            let current = chunks.join(' ');
-            if (!current.trim()) current = resultText.value;
-            
-            let text = current.trimEnd();
-            if (text.length > 0) {
-                saveStateForUndo();
-                let lastSpaceIndex = text.lastIndexOf(' ');
-                let newText = (lastSpaceIndex !== -1) ? text.substring(0, lastSpaceIndex) : '';
-                chunks = newText ? [newText] : [];
-                renderText();
-                resetMicrophoneIfListening();
-                notify("Letztes Wort gelöscht.", "#37474F");
-            }
-        });
-
-        btnDeleteChunk.addEventListener('click', () => {
-            if (chunks.length > 0) {
-                saveStateForUndo();
-                chunks.pop(); 
-                renderText();
-                resetMicrophoneIfListening();
-                notify("Letzten Satz gelöscht.", "#263238");
-            }
-        });
-
-        btnUndo.addEventListener('click', () => {
-            saveStateForUndo();
-            chunks = undoHistory.trim() ? [undoHistory.trim()] : [];
-            renderText();
-            btnUndo.style.display = 'none';
-            resetMicrophoneIfListening();
-            notify("Wiederhergestellt!", "#4CAF50");
-        });
-
-        btnSave.addEventListener('click', () => {
-            const text = resultText.value;
-            if (!text.trim()) {
-                notify("Kein Text zum Speichern vorhanden!", "#E57373");
-                return;
-            }
-            
-            const now = new Date();
-            const dateStr = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
-            const timeStr = `${String(now.getHours()).padStart(2, '0')}h${String(now.getMinutes()).padStart(2, '0')}`;
-            const fileName = `SprachDiktat_${dateStr}_${timeStr}.txt`;
-
-            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = fileName;
-            a.click();
-            URL.revokeObjectURL(a.href);
-            
-            notify(`Datei gespeichert: <b>${fileName}</b>`, "#FF9800");
-        });
-
-        btnOpen.addEventListener('click', () => { fileInput.click(); });
-
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    chunks = [evt.target.result.trim()];
-                    renderText();
-                    notify("Entwurf erfolgreich geöffnet!", "#9C27B0");
-                };
-                reader.readAsText(file, 'UTF-8');
-            }
-        });
-
+        // Button Controls Logic
         btnStart.addEventListener('click', () => {
             isManuallyStopped = false;
-            if (resultText.value.trim() && chunks.length === 0) {
-                chunks = [resultText.value.trim()];
+            baseText = resultText.value;
+            try {
+                recognition.start();
+            } catch (e) {
+                console.error(e);
             }
-            recognition.start();
         });
 
         btnStop.addEventListener('click', () => {
@@ -426,11 +785,144 @@
             recognition.stop();
         });
 
+        // Delete 1 Word
+        btnDeleteWord.addEventListener('click', () => {
+            let text = resultText.value.trimEnd();
+            if (text.length > 0) {
+                saveStateForUndo();
+                let lastSpaceIndex = text.lastIndexOf(' ');
+                let newText = (lastSpaceIndex !== -1) ? text.substring(0, lastSpaceIndex) : '';
+                resultText.value = newText;
+                baseText = newText;
+                localStorage.setItem('voiceDraftDe', newText);
+                updateStats();
+                resetMicrophoneIfListening();
+                showToast("1 Wort gelöscht.");
+            }
+        });
+
+        // Clear All Text
+        btnClearAll.addEventListener('click', () => {
+            if (resultText.value.trim() !== '') {
+                saveStateForUndo();
+                resultText.value = '';
+                baseText = '';
+                localStorage.removeItem('voiceDraftDe');
+                updateStats();
+                resetMicrophoneIfListening();
+                setStatus("Text wurde vollständig gelöscht.");
+                showToast("Text gelöscht. Klicken Sie auf „Wiederherstellen“, falls versehentlich.");
+            }
+        });
+
+        // Undo Deleted Text
+        btnUndo.addEventListener('click', () => {
+            resultText.value = undoHistory;
+            baseText = undoHistory;
+            localStorage.setItem('voiceDraftDe', undoHistory);
+            btnUndo.style.display = 'none';
+            updateStats();
+            resetMicrophoneIfListening();
+            setStatus("Gelöschter Text erfolgreich wiederhergestellt!");
+            showToast("Wiederhergestellt!");
+        });
+
+        // Download Draft File (.txt)
+        btnSave.addEventListener('click', () => {
+            const text = resultText.value;
+            if (!text.trim()) {
+                showToast("Es ist kein Text zum Herunterladen vorhanden!");
+                return;
+            }
+
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+            const fileName = `Entwurf_${dateStr}_${timeStr}.txt`;
+
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(a.href);
+
+            showToast(`Entwurf heruntergeladen: ${fileName}`);
+        });
+
+        // Open Draft Text File
+        btnOpen.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                saveStateForUndo();
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    resultText.value = evt.target.result;
+                    baseText = evt.target.result;
+                    localStorage.setItem('voiceDraftDe', evt.target.result);
+                    updateStats();
+                    setStatus("Textdatei erfolgreich geöffnet.");
+                    showToast("Entwurf geladen!");
+                };
+                reader.readAsText(file, 'UTF-8');
+            }
+        });
+
+        // Copy Text to Clipboard
         btnCopy.addEventListener('click', () => {
+            if (!resultText.value) {
+                showToast("Kein Text zum Kopieren vorhanden!");
+                return;
+            }
             resultText.select();
             document.execCommand('copy');
-            window.getSelection().removeAllRanges(); 
-            notify("In die Zwischenablage kopiert!", "#2196F3");
+            window.getSelection().removeAllRanges();
+            showToast("Text in die Zwischenablage kopiert!");
+        });
+
+        // Text-To-Speech (Vorlesen)
+        let ttsUtterance = null;
+        btnSpeak.addEventListener('click', () => {
+            if ('speechSynthesis' in window) {
+                if (window.speechSynthesis.speaking) {
+                    window.speechSynthesis.cancel();
+                    btnSpeak.innerHTML = '<i class="fas fa-volume-up"></i> Text vorlesen';
+                    showToast("Vorlesen angehalten.");
+                    return;
+                }
+
+                const text = resultText.value.trim();
+                if (!text) {
+                    showToast("Kein Text zum Vorlesen vorhanden!");
+                    return;
+                }
+
+                ttsUtterance = new SpeechSynthesisUtterance(text);
+                ttsUtterance.lang = 'de-DE';
+                ttsUtterance.rate = 1.0;
+
+                ttsUtterance.onstart = () => {
+                    btnSpeak.innerHTML = '<i class="fas fa-stop"></i> Vorlesen stoppen';
+                    setStatus("Text wird vorgelesen...");
+                };
+
+                ttsUtterance.onend = () => {
+                    btnSpeak.innerHTML = '<i class="fas fa-volume-up"></i> Text vorlesen';
+                    setStatus("Bereit.");
+                };
+
+                ttsUtterance.onerror = () => {
+                    btnSpeak.innerHTML = '<i class="fas fa-volume-up"></i> Text vorlesen';
+                };
+
+                window.speechSynthesis.speak(ttsUtterance);
+            } else {
+                showToast("Sprachausgabe wird von Ihrem Browser nicht unterstützt.");
+            }
         });
     </script>
 </body>
