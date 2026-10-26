@@ -580,10 +580,7 @@
         // German Automatic Capitalization Logic
         function autoCapitalizeGerman(text) {
             if (!text) return text;
-            // Capitalize first character
             let str = text.charAt(0).toUpperCase() + text.slice(1);
-            
-            // Capitalize letter after sentence delimiters (. ? ! newline or newline bullet)
             return str.replace(/([\.\?!\n]\s*|\n-\s*)([a-zäöüß])/g, function(match, p1, p2) {
                 return p1 + p2.toUpperCase();
             });
@@ -621,7 +618,6 @@
             else if (symbol === '"') formattedSymbol = ' "" ';
             else if (['.', ',', '?', '!', ':', '...'].includes(symbol)) formattedSymbol = symbol + ' ';
 
-            // Insert at cursor position if focused, else append to end
             let newText = text;
             if (startPos || startPos === 0) {
                 newText = text.substring(0, startPos) + formattedSymbol + text.substring(endPos);
@@ -649,13 +645,11 @@
 
         // Load Saved Theme and Draft on Startup
         window.addEventListener('DOMContentLoaded', () => {
-            // Restore theme
             if (localStorage.getItem('voiceDraftTheme') === 'dark') {
                 document.body.classList.add('dark-mode');
                 btnThemeToggle.innerHTML = '<i class="fas fa-sun"></i>';
             }
 
-            // Restore draft
             const savedDraft = localStorage.getItem('voiceDraftDe');
             if (savedDraft && savedDraft.trim() !== '') {
                 resultText.value = savedDraft;
@@ -686,14 +680,17 @@
 
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
-            // Continuous set to false prevents duplicate text bug on mobile browsers (Chrome Android)
             recognition.continuous = false;
             recognition.interimResults = true;
+            
+            // Ép ngôn ngữ tiếng Đức lúc khởi tạo
             recognition.lang = 'de-DE';
 
             let currentSessionFinal = '';
 
             recognition.onstart = function() {
+                // Đảm bảo thuộc tính lang luôn là tiếng Đức khi mic chạy
+                recognition.lang = 'de-DE';
                 setStatus("Aufnahme läuft... <br><span style='font-size: 0.88rem;'>(Sprechen Sie ganz entspannt, Pausen werden abgewartet)</span>");
                 statusDot.classList.add('active');
                 resultText.classList.add('recording');
@@ -737,13 +734,15 @@
             };
 
             recognition.onend = function() {
-                // Finalize session baseText
                 baseText = resultText.value;
                 localStorage.setItem('voiceDraftDe', baseText);
 
-                // Auto-restart if not manually stopped by user
+                // Khi tự động khởi động lại lượt thu âm mới, ép lại tiếng Đức
                 if (!isManuallyStopped) {
-                    try { recognition.start(); } catch (e) {}
+                    try { 
+                        recognition.lang = 'de-DE';
+                        recognition.start(); 
+                    } catch (e) {}
                 } else {
                     setStatus("Aufnahme gestoppt. Sie können den Text bearbeiten oder kopieren.");
                     statusDot.classList.remove('active');
@@ -774,6 +773,8 @@
             isManuallyStopped = false;
             baseText = resultText.value;
             try {
+                // Ép tiếng Đức trước khi bật mic
+                recognition.lang = 'de-DE';
                 recognition.start();
             } catch (e) {
                 console.error(e);
