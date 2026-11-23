@@ -14,7 +14,7 @@ html{height:100%;-webkit-text-size-adjust:100%}
 body{margin:0;height:100%;height:100dvh;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
 button,textarea,input{font:inherit}button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}button:disabled{opacity:.35;cursor:default}button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .shell{height:100%;height:100dvh;max-width:1260px;margin:auto;padding:clamp(9px,1.8vw,20px);padding-bottom:max(10px,env(safe-area-inset-bottom));min-width:0}
-.app{height:100%;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:clamp(8px,1.3vh,13px)}
+.app{height:100%;min-height:0;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto auto;gap:clamp(8px,1.3vh,13px)}
 .header{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:43px}
 .header h1{font-size:clamp(23px,2.6vw,32px);line-height:1.1;margin:0;font-weight:780;letter-spacing:-.045em;white-space:nowrap}
 .header-right{display:flex;align-items:center;gap:9px}
@@ -109,6 +109,16 @@ button,textarea,input{font:inherit}button{cursor:pointer;touch-action:manipulati
 @media(max-height:440px){.header{min-height:32px}.command-btn{height:35px}.audio-card{padding-top:4px;padding-bottom:4px}.chip{height:28px}}
 body.keyboard-open{overflow:auto;height:auto;min-height:100dvh}body.keyboard-open .shell{height:auto;min-height:100dvh}body.keyboard-open .app{height:auto;min-height:100dvh}body.keyboard-open #result{min-height:36vh}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* Drei kompakte Übungsmodi. Der Erkennungskern bleibt de-DE wie in der bewährten Vorlage. */
+.mode-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
+.mode-caption{font-size:12px;font-weight:720;color:var(--muted);white-space:nowrap}
+.mode-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:min(100%,420px);padding:3px;gap:4px;border:1px solid var(--stroke);border-radius:12px;background:var(--panel)}
+.mode-btn{height:34px;min-width:0;padding:0 9px;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--muted);font-size:12px;font-weight:740;white-space:nowrap;transition:background .16s,border-color .16s,color .16s}
+.mode-btn[aria-pressed="true"]{color:var(--accent);border-color:var(--stroke);background:var(--accent-bg)}
+.mode-btn:disabled{opacity:.6}
+@media(max-width:670px){.mode-caption{display:none}.mode-options{width:100%;}.mode-btn{height:32px}}
+@media(max-height:650px){.mode-row{gap:4px}.mode-options{padding:2px}.mode-btn{height:29px}}
 </style>
 </head>
 <body>
@@ -137,6 +147,14 @@ body.keyboard-open{overflow:auto;height:auto;min-height:100dvh}body.keyboard-ope
   <button class="icon-btn" id="theme" type="button" aria-label="Design wechseln" title="Hell / Dunkel"><svg class="icon"><use id="themeUse" href="#i-sun"/></svg></button>
  </div>
 </header>
+<div class="mode-row" role="group" aria-label="Sprechmodus wählen">
+ <span class="mode-caption">Übungsmodus</span>
+ <div class="mode-options">
+  <button id="modeOne" class="mode-btn" type="button" data-mode="one" aria-pressed="false" title="Ein Wort sprechen: automatisch Punkt setzen und weiter zuhören">1 Wort</button>
+  <button id="modeShort" class="mode-btn" type="button" data-mode="short" aria-pressed="false" title="Kurzen Satz sprechen: automatisch Punkt setzen und weiter zuhören">Kurz · 2–6</button>
+  <button id="modeLong" class="mode-btn" type="button" data-mode="long" aria-pressed="true" title="Längere Texte diktieren, ohne automatische Punkte nach jedem Abschnitt">Lang · 7+</button>
+ </div>
+</div>
 <section class="main-card" id="editor">
  <div class="editor-top">
   <div class="editor-left"><span class="editor-title">Ihr Text</span><span class="stats" id="stats">0 Wörter · 0 Zeichen</span></div>
@@ -185,10 +203,11 @@ const SpeechEngine = window.SpeechRecognition || window.webkitSpeechRecognition;
 const KEY_TEXT = 'speech2text_de_text';
 const KEY_THEME = 'speech2text_de_theme';
 const KEY_SIZE = 'speech2text_de_size';
+const KEY_MODE = 'speech2text_de_mode';
 const state = {
   committed:'', phase:'idle', session:null, restart:null, undo:[], run:0,
   media:null, stream:null, chunks:[], audioBlob:null, audioURL:'', audioSeconds:0, recordedMs:0, resumedAt:0,
-  fontSize:22, speaking:false, utterance:null, toastTimer:0
+  fontSize:22, speaking:false, utterance:null, toastTimer:0, mode:'long'
 };
 function saved(key){try{return localStorage.getItem(key)}catch(_){return null}}
 function save(key,val){try{localStorage.setItem(key,val)}catch(_){}}
@@ -221,8 +240,47 @@ function appendSpeech(original,addition){
 function setText(text){state.committed=capitalizeSentences(text);dom.result.value=state.committed;save(KEY_TEXT,state.committed);count()}
 function snapshot(){state.undo.push(dom.result.value);if(state.undo.length>40)state.undo.shift();dom.undo.disabled = !state.undo.length}
 function assemble(base,pieces){let text=base;for(const piece of pieces)text=appendSpeech(text,piece);return capitalizeSentences(text)}
-function snapshotResult(session,withInterim=false){const pieces=[...session.final];if(withInterim&&session.interim)pieces.push(session.interim);return assemble(session.base,pieces)}
+// Bei Ein-Wort-Übungen wird nur das ERSTE erkannte Wort übernommen.
+// Eine Web-Speech-Sitzung kann keine zuverlässige Wortzahl erzwingen:
+// Erst das erkannte Ergebnis wird auf ein Wort begrenzt.
+function unitForMode(text, mode){
+  const spoken=(text||'').trim();
+  if(mode==='one'){
+    const first=spoken.match(/[\p{L}\p{N}]+(?:[-'’][\p{L}\p{N}]+)*/u);
+    return first?first[0]:'';
+  }
+  return spoken;
+}
+function dottedUnit(text, mode){
+  const unit=unitForMode(text,mode).replace(/[\s.,!?;:]+$/u,'').trim();
+  return unit?unit+'.':'';
+}
+function snapshotResult(session,withInterim=false){
+  const pieces=[...session.final];
+  if(withInterim&&session.interim)pieces.push(session.interim);
+  const heard=pieces.join(' ').trim();
+  if(session.mode==='long')return assemble(session.base,pieces);
+  // Während des Sprechens keine Satzzeichen aus unbestätigten Wörtern erzeugen.
+  return assemble(session.base,[unitForMode(heard,session.mode)]);
+}
+function selectMode(mode){
+  if(!['one','short','long'].includes(mode) || state.phase==='recording' || state.phase==='finishing')return;
+  state.mode=mode;
+  save(KEY_MODE,mode);
+  document.querySelectorAll('.mode-btn').forEach(button=>{
+    button.setAttribute('aria-pressed', String(button.dataset.mode===mode));
+  });
+}
+function recognizedWords(text){
+  return (text.match(/[\p{L}\p{N}]+(?:['’\-][\p{L}\p{N}]+)*/gu)||[]).length;
+}
+document.querySelectorAll('.mode-btn').forEach(button=>{
+  button.addEventListener('click',()=>selectMode(button.dataset.mode));
+});
 function drawButtons(){
+  document.querySelectorAll('.mode-btn').forEach(button=>{
+    button.disabled=state.phase==='recording'||state.phase==='finishing';
+  });
   const recording = state.phase==='recording';
   const paused = state.phase==='paused';
   dom.start.disabled = recording;
@@ -297,7 +355,7 @@ function launchRecognition(){
   if(state.phase!=='recording' || state.session || !SpeechEngine) return;
   const engine = new SpeechEngine();
   engine.lang='de-DE'; engine.continuous=false; engine.interimResults=true; engine.maxAlternatives=1;
-  const session={engine,base:state.committed,final:[],interim:'',invalid:false,error:''};
+  const session={engine,base:state.committed,final:[],interim:'',invalid:false,error:'',mode:state.mode,finishing:false};
   state.session=session;
   engine.onstart=()=>{ if(state.session!==session) return; if(state.phase!=='recording'){try{engine.stop()}catch(_){}} else {status('Hört zu …','recording'); dom.editor.classList.add('recording');} };
   engine.onresult=e=>{
@@ -311,6 +369,12 @@ function launchRecognition(){
     }
     session.final=final ? [final] : []; session.interim=interim;
     dom.result.value=snapshotResult(session,true); count(); dom.result.scrollTop=dom.result.scrollHeight;
+    // Bei 1 Wort / Kurz den ersten fertigen Abschnitt abschließen,
+    // danach automatisch eine neue Hör-Sitzung beginnen (keine Pause).
+    if(session.mode!=='long' && final.trim() && !session.finishing){
+      session.finishing=true;
+      try{engine.stop()}catch(_){ /* onend kommt ggf. ohnehin */ }
+    }
   };
   engine.onerror=e=>{
     if(state.session!==session) return;
@@ -324,13 +388,26 @@ function launchRecognition(){
     if(state.session!==session) return;
     state.session=null;
     if(!session.invalid){
-      const pieces=[...session.final];
-      if(state.phase!=='recording' && session.interim) pieces.push(session.interim);
-      setText(assemble(session.base,pieces));
+      const final=session.final.join(' ').trim();
+      // Nur falls kein endgültiges Ergebnis vorliegt, bei Stopp/Pause die
+      // bereits sichtbaren Wörter übernehmen; sonst nicht doppelt anhängen.
+      const fallback=(!final && state.phase!=='recording' && session.error!=='no-speech')
+        ? session.interim.trim() : '';
+      const spoken=final||fallback;
+      if(session.mode==='long'){
+        const pieces=final?session.final:(fallback?[fallback]:[]);
+        setText(assemble(session.base,pieces));
+      }else if(spoken){
+        setText(assemble(session.base,[dottedUnit(spoken,session.mode)]));
+      }else{
+        setText(session.base);
+      }
     }
     dom.editor.classList.remove('recording');
-    if(state.phase==='recording'){status('Hört zu …','recording'); scheduleNext(session.error==='no-speech'?560:280)}
-    else if(state.phase==='paused'){status('Pausiert','paused')}
+    if(state.phase==='recording'){
+      status('Hört zu …','recording');
+      scheduleNext(session.error==='no-speech'?560:280);
+    }else if(state.phase==='paused')status('Pausiert','paused');
   };
   try{engine.start()}catch(error){state.session=null; dom.editor.classList.remove('recording'); status('Mikrofon prüfen','error'); notice('Spracherkennung konnte nicht starten.'); console.info(error)}
 }
@@ -559,6 +636,7 @@ window.addEventListener('pagehide',()=>{ clearTimeout(state.restart); if(state.s
   const old=saved(KEY_TEXT); if(old!==null) setText(old); else count();
   const size=Number(saved(KEY_SIZE)); if(size>=16 && size<=36){ state.fontSize=size; document.documentElement.style.setProperty('--font-size',size+'px'); }
   const theme=saved(KEY_THEME); setTheme(theme==='1');
+  selectMode(saved(KEY_MODE)||'long');
   drawButtons(); dom.undo.disabled=true; refreshAudioButtons(); updatePlayPosition(); adjustViewport();
   status('Bereit');
   if(!SpeechEngine){ dom.start.disabled=true; status('Nicht verfügbar','error','Bitte Chrome, Edge oder Safari prüfen.'); }
