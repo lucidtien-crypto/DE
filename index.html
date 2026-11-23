@@ -100,6 +100,8 @@
   .edit-btn{height:clamp(38px,5.4vh,45px)}
   .control-btn{height:clamp(40px,6vh,53px)}
   .footnote{display:none}
+  .voice-arm{min-height:34px;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface-alt);color:var(--ink);font-size:11px;font-weight:700;white-space:nowrap}
+  .voice-arm[aria-pressed="true"]{background:var(--green-soft);color:var(--green);border-color:var(--green)}
   .audio-card{flex:0 0 auto;padding:9px 12px 10px;background:var(--surface);border:1px solid var(--line-strong);border-radius:15px;box-shadow:var(--shadow);display:grid;gap:8px;min-width:0}
   .audio-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
   .audio-title{display:flex;align-items:center;gap:7px;min-width:0;white-space:nowrap}
@@ -119,7 +121,7 @@
     body{padding:6px 7px max(6px,env(safe-area-inset-bottom))}
     .app{gap:6px}.header{gap:6px}.identity h1{font-size:16px}.identity p{font-size:10px}
     .status-card{padding:7px 9px;gap:5px}.status-orb{width:25px;height:25px}
-    .source-wrap select{min-width:105px;max-width:135px;height:30px}.meter{width:42px}
+    .source-wrap select{min-width:105px;max-width:135px;height:30px}.meter{display:none}.voice-arm{min-height:30px;padding:0 7px;font-size:10px}
     .editor-toolbar{padding:7px 10px 2px}.text-box{padding:9px 11px;font-size:19px;min-height:0}
     .editor-footer{min-height:35px;padding:5px 9px}
     .record-controls{grid-template-columns:1fr 1fr}.record-controls .primary{height:42px}
@@ -127,7 +129,7 @@
     .audio-card{padding:7px 9px;gap:5px;border-radius:12px}
     .audio-playback{gap:7px}.play-button{height:30px;width:30px}
   }
-  @media(max-width:390px){.audio-hint{display:none}.audio-action{padding:5px}.audio-volume{display:none}.audio-title strong{font-size:12px}.audio-seek{height:13px}}
+  @media(max-width:390px){.source-wrap select{min-width:98px;max-width:110px}.voice-arm{padding:0 5px}.audio-hint{display:none}.audio-action{padding:5px}.audio-volume{display:none}.audio-title strong{font-size:12px}.audio-seek{height:13px}}
   @media(max-height:630px){
     .identity p,.status-copy small,.source-wrap span,.meter{display:none}
     .status-card{padding:5px 8px}.header .logo{width:32px;height:32px}
@@ -141,6 +143,35 @@
   body.keyboard-open .app{height:auto;min-height:100dvh}
   body.keyboard-open .text-box{height:32vh;min-height:100px}
 
+
+  /* Diktat: Start / Pause / endgültiger Abschluss. */
+  .record-controls{grid-template-columns:minmax(0,1.5fr) minmax(0,.85fr) minmax(0,1.2fr) minmax(0,.8fr)}
+  .control-btn.finish{color:var(--red);background:var(--surface);border-color:var(--line);font-size:12px}
+  .control-btn.finish span{white-space:nowrap}
+  .audio-card{gap:4px;padding:8px 11px}
+  .audio-single-line{gap:clamp(4px,.65vw,12px);flex-wrap:nowrap}
+  .audio-player-actions{display:flex;align-items:center;gap:3px;flex:none}
+  .audio-small{border:1px solid var(--line);background:var(--surface-alt);color:var(--ink);border-radius:8px;height:30px;padding:0 6px;font-size:11px;font-weight:750;white-space:nowrap}
+  .audio-small:disabled{opacity:.4}
+  .audio-time{margin-left:auto;font-size:11px}
+  .audio-action{font-size:20px;padding:3px 6px;line-height:1}
+  .audio-actions{gap:0}
+  .audio-seek{display:block;width:100%;height:16px;flex:none;accent-color:var(--green);touch-action:pan-y}
+  .audio-hint{font-size:10px;line-height:1.1}
+  @media(max-width:680px){
+    .record-controls{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+    .record-controls .primary{grid-column:auto;height:38px}
+    .record-controls .finish{font-size:11px}
+    .audio-card{padding:6px 8px;gap:3px}
+    .audio-title{gap:3px}.audio-title svg{display:none}
+    .audio-title strong{font-size:11px}
+    .audio-small{height:29px;padding:0 3px;font-size:10px}
+    .audio-player-actions{gap:2px}.play-button{height:28px;width:28px}
+    .audio-time{font-size:10px}
+    .audio-action{font-size:18px;padding:3px 4px}
+  }
+  @media(max-width:360px){.audio-title strong{font-size:10px}.audio-small{font-size:9px}.audio-time{font-size:9px}.audio-head{gap:2px}}
+  @media(max-height:650px){.record-controls .primary,.control-btn{height:33px}.audio-hint{display:none}.audio-card{gap:2px}}
 </style>
 </head>
 <body>
@@ -184,6 +215,7 @@
           <option value="tab">Tab-Audio (PC)</option>
         </select>
       </label>
+      <button class="voice-arm" id="voiceArm" type="button" aria-pressed="false" title="Sprachstart einschalten: Mikrofon wartet auf 'Sprechen starten'">Sprachstart: Aus</button>
     </div>
   </section>
 
@@ -208,24 +240,27 @@
   </div>
   <div class="record-controls">
     <button class="control-btn primary" id="btnStart"><svg class="icon" aria-hidden="true"><use href="#i-mic"/></svg><span>Sprechen starten</span></button>
-    <button class="control-btn stop" id="btnStop" disabled><svg class="icon" aria-hidden="true"><use href="#i-stop"/></svg><span>Stoppen</span></button>
+    <button class="control-btn stop" id="btnStop" disabled><svg class="icon" aria-hidden="true"><use href="#i-stop"/></svg><span>Pause</span></button>
+    <button class="control-btn finish" id="btnFinish" disabled title="Aufnahme endgültig beenden">■ <span>Aufnahme beenden</span></button>
     <button class="control-btn copy" id="btnCopy"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg><span>Kopieren</span></button>
   </div>
-  <section class="audio-card" id="audioCard" aria-label="Gespeicherte Tonaufnahme">
-    <div class="audio-head">
-      <div class="audio-title"><svg class="icon" aria-hidden="true"><use href="#i-volume"/></svg><strong>Tonaufnahme</strong><span class="audio-hint" id="audioHint">Noch keine Aufnahme</span></div>
+  <section class="audio-card" id="audioCard" aria-label="Tonaufnahme">
+    <div class="audio-head audio-single-line">
+      <div class="audio-title"><svg class="icon" aria-hidden="true"><use href="#i-volume"/></svg><strong>Tonaufnahme</strong></div>
+      <div class="audio-player-actions">
+        <button class="audio-small" id="audioBack" disabled title="10 Sekunden zurück" aria-label="10 Sekunden zurück">−10s</button>
+        <button class="play-button" id="audioPlay" disabled aria-label="Aufnahme abspielen">▶</button>
+        <button class="audio-small" id="audioForward" disabled title="10 Sekunden vor" aria-label="10 Sekunden vor">+10s</button>
+      </div>
+      <span class="audio-time" id="audioTime">00:00 / 00:00</span>
       <div class="audio-actions">
-        <button class="audio-action" id="audioDownload" disabled title="Aufnahme herunterladen">↓ <span>Speichern</span></button>
-        <button class="audio-action audio-danger" id="audioDelete" disabled title="Aufnahme löschen">× <span>Löschen</span></button>
+        <button class="audio-action" id="audioDownload" disabled title="Aufnahme herunterladen" aria-label="Aufnahme herunterladen">↓</button>
+        <button class="audio-action audio-danger" id="audioDelete" disabled title="Aufnahme löschen" aria-label="Aufnahme löschen">×</button>
       </div>
     </div>
-    <div class="audio-playback">
-      <button class="play-button" id="audioPlay" disabled aria-label="Aufnahme abspielen">▶</button>
-      <input id="audioSeek" class="audio-seek" type="range" min="0" max="1000" value="0" disabled aria-label="Wiedergabeposition">
-      <span class="audio-time" id="audioTime">00:00</span>
-      <button class="audio-volume" id="audioMute" disabled title="Ton ein- oder ausschalten" aria-label="Ton ein- oder ausschalten">◖))</button>
-      <audio id="audioElement" preload="metadata" hidden></audio>
-    </div>
+    <input id="audioSeek" class="audio-seek" type="range" min="0" max="1000" value="0" disabled aria-label="Wiedergabeposition">
+    <small id="audioHint" class="audio-hint">Noch keine Aufnahme</small>
+    <audio id="audioElement" preload="metadata" hidden></audio>
   </section>
   <div class="footnote" id="sourceHint">Das Mikrofon hört sowohl normale Sprache als auch Ton aus einem Lautsprecher im Raum. Erkennungsqualität und Abstand hängen vom Gerät ab.</div>
 </main>
@@ -235,21 +270,21 @@
 // Eine einzige HTML-Datei. Die Texterkennung verwendet die Web Speech API (de-DE).
 const $ = id => document.getElementById(id);
 const el = {
-  text:$('resultText'), start:$('btnStart'), stop:$('btnStop'), copy:$('btnCopy'),
+  text:$('resultText'), start:$('btnStart'), stop:$('btnStop'), finish:$('btnFinish'), copy:$('btnCopy'),
   speak:$('btnSpeak'), speakLabel:$('speakLabel'), speakIcon:$('speakIcon'),
   del:$('btnDeleteWord'), clear:$('btnClearAll'), undo:$('btnUndo'),
   period:$('btnPeriod'), comma:$('btnComma'), theme:$('btnThemeToggle'),
   themeIcon:$('themeIcon'), fontDown:$('fontDown'), fontUp:$('fontUp'),
   stats:$('wordStats'), card:$('editorCard'), statusCard:$('statusCard'),
   status:$('statusText'), detail:$('statusDetail'), source:$('audioSource'),
-  hint:$('sourceHint'), toast:$('toast'), bars:[...$('meter').children]
+  hint:$('sourceHint'), toast:$('toast'), voiceArm:$('voiceArm'), bars:[...$('meter').children]
 };
 const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const STORAGE_TEXT='voiceDraftDe', STORAGE_THEME='voiceDraftTheme', STORAGE_FONT='voiceDraftDeFont';
 const state={
   committed:'', wants:false, session:null, timer:null, restarting:0, token:0,
   stream:null, audioContext:null, meterRAF:0, fontSize:24, undo:[],
-  speaking:false, utterance:null, toastTimer:0, recorder:null, recordingStream:null, audioChunks:[], audioURL:null, audioBlob:null, audioPending:false
+  speaking:false, utterance:null, toastTimer:0, voiceArmed:false, standby:null, standbyTimer:null, standbyGeneration:0, recorder:null, recordingStream:null, audioChunks:[], audioURL:null, audioBlob:null, audioPending:false, phase:"idle", audioActiveMs:0, audioResumeAt:0, audioDuration:0
 };
 function getSaved(key){try{return localStorage.getItem(key)}catch(_){return null}}
 function save(key,value){try{localStorage.setItem(key,value)}catch(_){}}
@@ -264,6 +299,92 @@ function capitalizeSentences(text){
   // Nur Satzanfänge groß schreiben; deutsche Substantive werden NICHT geraten.
   return text.replace(/(^|[.!?]\s*|\n\s*)([a-zäöüß])/gmu,(all,prefix,letter)=>prefix+letter.toUpperCase());
 }
+// Gesprochene Satzzeichen und Steuerbefehle nur im erkannten Text behandeln.
+// Die Anweisung "Sprechen stoppen" wird nicht in die Notiz geschrieben.
+function spokenCommands(raw){
+  let text=String(raw||'').trim();
+  const finish=/(?:^|\s)(?:aufnahme\s+beenden)(?:[.!?,\s]*)$/iu.test(text);
+  if(finish)text=text.replace(/(?:^|\s)aufnahme\s+beenden[.!?,\s]*$/iu,'');
+  const stop=/(?:^|\s)(?:sprechen\s+stoppen|sprech\s+stoppen|sprechen\s+stopp)(?:[.!?,\s]*)$/iu.test(text);
+  if(stop)text=text.replace(/(?:^|\s)(?:sprechen\s+stoppen|sprech\s+stoppen|sprechen\s+stopp)[.!?,\s]*$/iu,'');
+  text=text.replace(/(?:^|\s)sprechen\s+starten(?=$|[\s.!?,])/giu,' ');
+  text=text.replace(/(?:^|\s)(punkt|komma)(?=$|[\s.!?,])/giu,(_,word)=>word.toLowerCase()==='punkt'?' . ':' , ');
+  // Punkt/Komma ohne Leerzeichen davor; keine doppelten Zeichen.
+  text=text.replace(/\s+([.,])/gu,'$1').replace(/([.,])\s*[.,]+/gu,'$1')
+           .replace(/([.,])(?=\p{L})/gu,'$1 ')
+           .replace(/ {2,}/gu,' ').trim();
+  return {text,stop,finish};
+}
+function updateVoiceArm(){
+  el.voiceArm.setAttribute('aria-pressed',String(state.voiceArmed));
+  el.voiceArm.textContent=state.voiceArmed?'Sprachstart: An':'Sprachstart: Aus';
+  el.voiceArm.disabled=el.source.value==='tab'||!Recognition;
+}
+function clearStandby(){
+  clearTimeout(state.standbyTimer);state.standbyTimer=null;
+  state.standbyGeneration++;
+  const old=state.standby;state.standby=null;
+  if(old)try{old.abort()}catch(_){}
+}
+function scheduleStandby(delay=350){
+  clearTimeout(state.standbyTimer);
+  if(!state.voiceArmed||state.wants||state.speaking||el.source.value!=='mic'||state.phase==='finishing')return;
+  state.standbyTimer=setTimeout(()=>{
+    state.standbyTimer=null;
+    if(!state.voiceArmed||state.wants||state.standby||state.speaking)return;
+    const engine=new Recognition();
+    const generation=++state.standbyGeneration;
+    let activated=false, finishing=false, fatal=false;
+    state.standby=engine;
+    engine.lang='de-DE';engine.continuous=false;engine.interimResults=true;
+    engine.onstart=()=>{
+      if(generation===state.standbyGeneration&&state.standby===engine)
+        status('Sprachstart bereit','Sagen Sie „Sprechen starten“.','listening');
+    };
+    engine.onresult=e=>{
+      if(generation!==state.standbyGeneration||state.standby!==engine||activated)return;
+      for(let i=0;i<e.results.length;i++){
+        if(!e.results[i].isFinal)continue;
+        const heard=(e.results[i][0]?.transcript||'').trim().replace(/[.,!?]+$/u,'').trim();
+        if(state.phase==='paused'&&/^aufnahme\s+beenden$/iu.test(heard)){finishing=true;try{engine.stop()}catch(_){};return}
+        if(/^(?:sprechen|sprache)\s+starten$/iu.test(heard)){
+          activated=true;
+          try{engine.stop()}catch(_){}
+          return;
+        }
+      }
+    };
+    engine.onerror=e=>{
+      if(generation!==state.standbyGeneration)return;
+      fatal=['not-allowed','service-not-allowed','audio-capture','network','language-not-supported'].includes(e.error);
+      if(fatal){
+        state.voiceArmed=false;updateVoiceArm();
+        status('Sprachstart nicht verfügbar','Mikrofon oder Verbindung prüfen.','error');
+      }
+    };
+    engine.onend=()=>{
+      if(generation!==state.standbyGeneration)return;
+      state.standby=null;
+      if(finishing&&state.phase==='paused'){finishRecording();return}
+      if(activated&&state.voiceArmed&&!state.wants){
+        // Erst starten, nachdem der Bereitschafts-Erkenner das Mikrofon freigibt.
+        startRecording();
+      }else if(state.voiceArmed&&!fatal){
+        scheduleStandby(450);
+      }
+    };
+    try{engine.start()}catch(_){state.standby=null;state.voiceArmed=false;updateVoiceArm();toast('Sprachstart konnte nicht aktiviert werden.')}
+  },delay);
+}
+el.voiceArm.addEventListener('click',()=>{
+  state.voiceArmed=!state.voiceArmed;updateVoiceArm();
+  if(state.voiceArmed){
+    toast('Sprachstart aktiv: „Sprechen starten“ sagen.');
+    if(!state.wants)scheduleStandby(0);
+  }else{
+    clearStandby();if(!state.wants)status('Bereit zum Diktieren','Sprachstart ausgeschaltet.');
+  }
+});
 function appendSpeech(original,addition){
   const more=(addition||'').trim(); if(!more)return original;
   if(!original)return more;
@@ -282,7 +403,13 @@ function snapshot(){
   if(state.undo.length>45)state.undo.shift();
   el.undo.disabled=false;
 }
-function updateRecordButtons(){el.start.disabled=state.wants;el.stop.disabled=!state.wants;el.source.disabled=state.wants}
+function updateRecordButtons(){
+  el.start.disabled=state.phase==='active'||state.phase==='finishing';
+  el.stop.disabled=state.phase!=='active';
+  el.finish.disabled=!['active','paused'].includes(state.phase);
+  el.start.querySelector('span').textContent=state.phase==='paused'?'Sprechen fortsetzen':'Sprechen starten';
+  el.source.disabled=state.phase!=='idle';
+}
 function resetSessionForEdit(){
   if(state.session){state.session.invalid=true;try{state.session.engine.abort()}catch(_){}}
   // onend startet die nächste Sitzung, sofern Aufnahme noch gewünscht ist.
@@ -345,6 +472,8 @@ if(!navigator.mediaDevices?.getDisplayMedia || !canUseTrackRecognition()){
   el.source.querySelector('option[value="tab"]').disabled=true;
 }
 el.source.addEventListener('change',()=>{
+  if(el.source.value==='tab'&&state.voiceArmed){state.voiceArmed=false;clearStandby();}
+  updateVoiceArm();
   el.hint.textContent=el.source.value==='tab'
     ? 'Wählen Sie beim Start einen Browser-Tab und aktivieren Sie „Tab-Audio teilen“. Nur in unterstützten Desktop-Browsern.'
     : 'Das Mikrofon hört sowohl normale Sprache als auch Ton aus einem Lautsprecher im Raum. Erkennungsqualität und Abstand hängen vom Gerät ab.';
@@ -390,29 +519,32 @@ el.speak.addEventListener('click',()=>{
   if(state.speaking){stopReading();status('Bereit zum Diktieren','Vorlesen beendet.');return}
   if(!el.text.value.trim()){toast('Kein Text zum Vorlesen vorhanden.');return}
   if(state.wants)stopRecording();
-  stopReading();
+  clearStandby();stopReading();
   const utterance=new SpeechSynthesisUtterance(el.text.value);state.utterance=utterance;
   utterance.lang='de-DE';utterance.rate=1;utterance.pitch=1;
   utterance.onstart=()=>{if(state.utterance!==utterance)return;state.speaking=true;el.speak.classList.add('playing');el.speakIcon.setAttribute('href','#i-stop');el.speakLabel.textContent='Vorlesen stoppen';status('Text wird vorgelesen …','Tippen, um die Wiedergabe zu beenden.','reading')};
-  const finish=()=>{if(state.utterance!==utterance)return;stopReading();if(!state.wants)status('Bereit zum Diktieren','Vorlesen beendet.')};
+  const finish=()=>{if(state.utterance!==utterance)return;stopReading();if(!state.wants){status('Bereit zum Diktieren','Vorlesen beendet.');scheduleStandby(500)}};
   utterance.onend=finish;utterance.onerror=finish;
   window.speechSynthesis.speak(utterance);
 });
 
 // Audio-Datei: separater Mitschnitt, ohne die Texterkennung zu ersetzen.
-const audioUI={player:$('audioElement'),play:$('audioPlay'),seek:$('audioSeek'),time:$('audioTime'),hint:$('audioHint'),download:$('audioDownload'),remove:$('audioDelete'),mute:$('audioMute')};
+const audioUI={player:$('audioElement'),play:$('audioPlay'),seek:$('audioSeek'),time:$('audioTime'),hint:$('audioHint'),download:$('audioDownload'),remove:$('audioDelete'),back:$('audioBack'),forward:$('audioForward')};
 const timeLabel=seconds=>{const n=Number.isFinite(seconds)?Math.max(0,Math.floor(seconds)):0;return `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`};
 function showAudioReady(ready){
-  for(const button of [audioUI.play,audioUI.seek,audioUI.download,audioUI.remove,audioUI.mute])button.disabled=!ready;
-  if(!ready){audioUI.time.textContent='00:00';audioUI.seek.value='0';audioUI.play.textContent='▶'}
+  for(const button of [audioUI.play,audioUI.seek,audioUI.download,audioUI.remove,audioUI.back,audioUI.forward])button.disabled=!ready;
+  if(!ready){audioUI.time.textContent='00:00 / 00:00';audioUI.seek.value='0';audioUI.play.textContent='▶'}
 }
 function discardAudio(){
   audioUI.player.pause();audioUI.player.removeAttribute('src');audioUI.player.load();
   if(state.audioURL){URL.revokeObjectURL(state.audioURL);state.audioURL=null}
-  state.audioBlob=null;state.audioChunks=[];audioUI.hint.textContent='Noch keine Aufnahme';showAudioReady(false);
+  state.audioBlob=null;state.audioChunks=[];state.audioDuration=0;audioUI.hint.textContent='Noch keine Aufnahme';showAudioReady(false);
 }
 function stopFileRecording(){
-  if(state.recorder&&state.recorder.state!=='inactive')try{state.recorder.stop()}catch(_){}
+  if(state.recorder&&state.recorder.state!=='inactive'){
+    try{state.recorder.requestData()}catch(_){}
+    try{state.recorder.stop()}catch(_){}
+  }
   else if(state.recordingStream){state.recordingStream.getTracks().forEach(t=>t.stop());state.recordingStream=null}
 }
 async function startFileRecording(token){
@@ -421,7 +553,7 @@ async function startFileRecording(token){
   try{
     // Vorhandene Tonquelle auf Desktop gemeinsam nutzen; auf Mobilgeräten separat anfordern.
     stream=state.stream?.getAudioTracks().length?state.stream:await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:true,autoGainControl:true},video:false});
-    if(!state.wants||token!==state.token){if(stream!==state.stream)stream.getTracks().forEach(t=>t.stop());return}
+    if(!state.wants||token!==state.token){if(stream!==state.stream)stream.getTracks().forEach(t=>t.stop());state.audioPending=false;return}
     const preferred=['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus'];
     const type=preferred.find(t=>MediaRecorder.isTypeSupported(t));
     const recorder=new MediaRecorder(stream,type?{mimeType:type}:undefined);
@@ -430,6 +562,8 @@ async function startFileRecording(token){
     recorder.ondataavailable=e=>{if(e.data?.size)state.audioChunks.push(e.data)};
     recorder.onerror=()=>{audioUI.hint.textContent='Aufnahme fehlgeschlagen'};
     recorder.onstop=()=>{
+      if(state.audioResumeAt){state.audioActiveMs+=performance.now()-state.audioResumeAt;state.audioResumeAt=0}
+      state.audioDuration=state.audioActiveMs/1000;
       const blob=new Blob(state.audioChunks,{type:recorder.mimeType||'audio/webm'});
       if(state.recordingStream===stream){stream.getTracks().forEach(t=>t.stop());state.recordingStream=null}
       if(state.recorder===recorder)state.recorder=null;
@@ -441,9 +575,12 @@ async function startFileRecording(token){
         audioUI.hint.textContent='Bereit zum Anhören';showAudioReady(true);
       }else{audioUI.hint.textContent='Keine Audiodaten erhalten';showAudioReady(false)}
       state.audioChunks=[];
+      if(state.phase==='finishing'||state.phase==='idle')clearStream();
     };
     recorder.start(1000);
+    state.audioResumeAt=performance.now();
   }catch(err){
+    state.audioPending=false;
     if(stream&&stream!==state.stream)stream.getTracks().forEach(t=>t.stop());
     audioUI.hint.textContent='Nur Texterkennung verfügbar';
     console.info('Audioaufnahme nicht verfügbar:',err);
@@ -453,11 +590,46 @@ audioUI.play.addEventListener('click',async()=>{if(!state.audioURL)return;if(aud
 audioUI.player.addEventListener('play',()=>audioUI.play.textContent='❚❚');
 audioUI.player.addEventListener('pause',()=>audioUI.play.textContent='▶');
 audioUI.player.addEventListener('ended',()=>audioUI.play.textContent='▶');
-function updateAudioPosition(){const duration=audioUI.player.duration;audioUI.time.textContent=timeLabel(audioUI.player.currentTime);audioUI.seek.value=Number.isFinite(duration)&&duration>0?String(Math.round(audioUI.player.currentTime/duration*1000)):'0'}
+function knownDuration(){
+  const native=audioUI.player.duration;
+  return Number.isFinite(native)&&native>0?native:(state.audioDuration||0);
+}
+function updateAudioPosition(){
+  const duration=knownDuration();
+  const current=Number.isFinite(audioUI.player.currentTime)?audioUI.player.currentTime:0;
+  audioUI.time.textContent=`${timeLabel(current)} / ${timeLabel(duration)}`;
+  audioUI.seek.value=duration>0?String(Math.round(Math.min(1,current/duration)*1000)):'0';
+}
 audioUI.player.addEventListener('timeupdate',updateAudioPosition);
-audioUI.player.addEventListener('loadedmetadata',()=>{audioUI.time.textContent=timeLabel(audioUI.player.duration)});
-audioUI.seek.addEventListener('input',()=>{if(Number.isFinite(audioUI.player.duration))audioUI.player.currentTime=Number(audioUI.seek.value)/1000*audioUI.player.duration});
-audioUI.mute.addEventListener('click',()=>{audioUI.player.muted=!audioUI.player.muted;audioUI.mute.textContent=audioUI.player.muted?'×':'◖))'});
+audioUI.player.addEventListener('durationchange',updateAudioPosition);
+audioUI.player.addEventListener('loadedmetadata',()=>{
+  // WebM aus MediaRecorder meldet auf manchen Browsern Infinity.
+  // Der Browser kann die tatsächliche Dauer durch einen großen Seek ermitteln.
+  if(!Number.isFinite(audioUI.player.duration)&&audioUI.player.seekable.length===0){
+    try{audioUI.player.currentTime=1e9}catch(_){}
+  }
+  updateAudioPosition();
+});
+audioUI.player.addEventListener('seeked',()=>{
+  if(audioUI.player.currentTime>state.audioDuration+1&&state.audioDuration>0){
+    try{audioUI.player.currentTime=0}catch(_){}
+  }
+  updateAudioPosition();
+});
+audioUI.seek.addEventListener('input',()=>{
+  const duration=knownDuration();if(duration>0){
+    try{audioUI.player.currentTime=Number(audioUI.seek.value)/1000*duration}catch(_){toast('Spulen wird von diesem Audioformat nicht unterstützt.');}
+  }
+  updateAudioPosition();
+});
+function seekBy(seconds){
+  if(!state.audioURL)return;
+  const duration=knownDuration();
+  try{audioUI.player.currentTime=Math.max(0,Math.min(duration||1e9,(audioUI.player.currentTime||0)+seconds))}catch(_){toast('Spulen ist hier nicht möglich.');}
+  updateAudioPosition();
+}
+audioUI.back.addEventListener('click',()=>seekBy(-10));
+audioUI.forward.addEventListener('click',()=>seekBy(10));
 audioUI.download.addEventListener('click',()=>{if(!state.audioURL)return;const a=document.createElement('a');a.href=state.audioURL;const ext=state.audioBlob?.type.includes('mp4')?'m4a':state.audioBlob?.type.includes('ogg')?'ogg':'webm';a.download='Deutsch_Aufnahme_'+new Date().toISOString().slice(0,19).replace(/[T:]/g,'-')+'.'+ext;document.body.append(a);a.click();a.remove()});
 audioUI.remove.addEventListener('click',()=>{if(!state.audioURL)return;discardAudio();toast('Tonaufnahme gelöscht. Der Text bleibt erhalten.')});
 showAudioReady(false);
@@ -466,18 +638,34 @@ function fitViewport(){if(!window.visualViewport)return;const vv=window.visualVi
 window.visualViewport?.addEventListener('resize',fitViewport);
 window.addEventListener('resize',fitViewport);fitViewport();
 
-function stopRecording(message='Aufnahme beendet'){
-  stopFileRecording();
-  state.wants=false;state.token++;
-  clearTimeout(state.timer);state.timer=null;
-  updateRecordButtons();
-  if(state.session){
-    // stop() statt abort(): bereits gesprochene finale Wörter werden gespeichert.
-    try{state.session.engine.stop()}catch(_){try{state.session.engine.abort()}catch(__){}}
-  }else{clearStream()}
-  el.card.classList.remove('recording');
-  status(message,'Text bleibt gespeichert.');
+function pauseRecording(message='Aufnahme pausiert'){
+  if(state.phase!=='active')return;
+  state.phase='paused';state.wants=false;state.token++;
+  if(state.audioResumeAt){state.audioActiveMs+=performance.now()-state.audioResumeAt;state.audioResumeAt=0}
+  if(state.recorder?.state==='recording')try{state.recorder.pause()}catch(_){}
+  clearTimeout(state.timer);state.timer=null;updateRecordButtons();
+  if(state.session){try{state.session.engine.stop()}catch(_){}}
+  el.card.classList.remove('recording');status(message,'Mit „Sprechen starten“ fortsetzen.');
+  if(!state.session)scheduleStandby(450);
 }
+function finishRecording(){
+  if(!['active','paused'].includes(state.phase))return;
+  if(state.phase==='active'&&state.audioResumeAt){state.audioActiveMs+=performance.now()-state.audioResumeAt;state.audioResumeAt=0}
+  state.phase='finishing';state.wants=false;state.token++;
+  clearTimeout(state.timer);state.timer=null;
+  // Deaktiviert den automatischen Sprachstart, um Abschluss nicht zu verhindern.
+  clearStandby();state.voiceArmed=false;updateVoiceArm();
+  updateRecordButtons();
+  if(state.session){try{state.session.engine.stop()}catch(_){}}
+  const recorder=state.recorder;
+  if(recorder&&recorder.state!=='inactive')stopFileRecording();
+  else{clearStream();if(!state.audioURL)audioUI.hint.textContent='Kein Ton verfügbar';}
+  el.card.classList.remove('recording');
+  state.phase='idle';updateRecordButtons();
+  status('Aufnahme abgeschlossen','Der Text bleibt gespeichert. Tonaufnahme unten abspielen oder speichern.');
+}
+// Bestehende Aufrufe aus Textvorlesen / Audiofehler: Aufnahme abschließen.
+function stopRecording(message){finishRecording();if(message&&message!=='Aufnahme beendet')status(message,'Text bleibt gespeichert.');}
 function scheduleRestart(delay=300){
   clearTimeout(state.timer);
   if(!state.wants)return;
@@ -503,15 +691,22 @@ function launchSession(){
       if(event.results[i].isFinal)final=appendSpeech(final,candidate);
       else interim=appendSpeech(interim,candidate);
     }
-    session.final=final;session.interim=interim;
-    el.text.value=capitalizeSentences(appendSpeech(appendSpeech(session.base,final),interim));
+    const parsedFinal=spokenCommands(final), parsedInterim=spokenCommands(interim);
+    session.final=parsedFinal.text;session.interim=parsedInterim.text;
+    el.text.value=capitalizeSentences(appendSpeech(appendSpeech(session.base,session.final),session.interim));
     updateStats();el.text.scrollTop=el.text.scrollHeight;
+    if(parsedFinal.finish&&state.wants){finishRecording();return}
+    if(parsedFinal.stop&&state.wants){
+      toast('Sprachbefehl: Aufnahme stoppen.');
+      pauseRecording('Per Sprachbefehl pausiert');
+    }
   };
   engine.onerror=(event)=>{
     if(state.session!==session)return;
     session.error=event.error||'unknown';
     if(['not-allowed','service-not-allowed','audio-capture','network','language-not-supported'].includes(session.error)){
-      state.wants=false;updateRecordButtons();stopFileRecording();
+      if(state.phase==='active'){state.phase='paused';if(state.audioResumeAt){state.audioActiveMs+=performance.now()-state.audioResumeAt;state.audioResumeAt=0}if(state.recorder?.state==='recording')try{state.recorder.pause()}catch(_){}}
+      state.wants=false;updateRecordButtons();
       const messages={
         'not-allowed':'Mikrofonzugriff verweigert',
         'service-not-allowed':'Spracherkennung nicht erlaubt',
@@ -539,10 +734,11 @@ function launchSession(){
       // no-speech ist in ruhigen Räumen normal, deshalb sanft neu starten.
       scheduleRestart(session.error==='no-speech'?600:280);
     }else{
-      clearStream();
+      if(state.phase==='idle'&&!state.recorder)clearStream();
       if(!['not-allowed','service-not-allowed','audio-capture','network','language-not-supported'].includes(session.error)){
-        if(!state.speaking)status('Aufnahme beendet','Text bleibt automatisch gespeichert.');
+        if(!state.speaking&&state.phase==='paused')status('Aufnahme pausiert','Mit Sprechen starten fortsetzen.');
       }
+      scheduleStandby(500);
     }
   };
   try{
@@ -554,15 +750,28 @@ function launchSession(){
     if(el.source.value==='mic'){
       try{engine.start();return}catch(_){}
     }
-    state.session=null;state.wants=false;updateRecordButtons();clearStream();
+    state.session=null;state.wants=false;state.phase='paused';updateRecordButtons();if(state.recorder?.state==='recording')try{state.recorder.pause()}catch(_){};
     status('Aufnahme konnte nicht starten','Bitte Mikrofonberechtigungen überprüfen.','error');
     toast('Die Spracherkennung konnte nicht gestartet werden.');
     console.warn(error);
   }
 }
 async function startRecording(){
-  if(state.wants||!Recognition)return;
+  if(state.wants||!Recognition||state.phase==='finishing')return;
+  if(state.phase==='paused'){
+    stopReading();clearStandby();state.phase='active';state.wants=true;state.token++;
+    if(state.recorder?.state==='paused'){
+      try{state.recorder.resume();state.audioResumeAt=performance.now()}catch(_){audioUI.hint.textContent='Audio konnte nicht fortgesetzt werden';}
+    }
+    updateRecordButtons();status('Aufnahme fortgesetzt','Ich höre wieder zu.','listening');
+    launchSession();
+    if(!state.recorder&&!state.audioPending)startFileRecording(state.token);
+    return;
+  }
+  state.phase='active';state.audioActiveMs=0;state.audioResumeAt=0;state.audioDuration=0;
+  discardAudio();
   stopReading();
+  clearStandby();
   state.wants=true;const token=++state.token;
   updateRecordButtons();status('Audioquelle wird vorbereitet …','Bitte Browserberechtigung erlauben.','listening');
   try{
@@ -595,14 +804,15 @@ async function startRecording(){
     startFileRecording(token);
   }catch(error){
     if(!state.wants||token!==state.token)return;
-    state.wants=false;updateRecordButtons();stopFileRecording();clearStream();
+    state.wants=false;state.phase='idle';updateRecordButtons();stopFileRecording();clearStream();
     status('Audioquelle nicht verfügbar',error.message||'Bitte Berechtigung prüfen.','error');toast(error.message||'Zugriff auf die Audioquelle fehlgeschlagen.');
   }
 }
 el.start.addEventListener('click',startRecording);
-el.stop.addEventListener('click',()=>stopRecording());
+el.stop.addEventListener('click',()=>pauseRecording());
+el.finish.addEventListener('click',finishRecording);
 window.addEventListener('pagehide',()=>{
-  stopFileRecording();state.wants=false;clearTimeout(state.timer);
+  clearStandby();stopFileRecording();state.wants=false;clearTimeout(state.timer);
   if(state.session){try{state.session.engine.abort()}catch(_){}}
   clearStream();
 });
@@ -611,7 +821,7 @@ window.addEventListener('pagehide',()=>{
   if(savedText!==null)commit(savedText);
   else updateStats();
   const savedFont=Number(getSaved(STORAGE_FONT));if(savedFont>=16&&savedFont<=38){state.fontSize=savedFont;el.text.style.fontSize=savedFont+'px'}
-  setTheme(getSaved(STORAGE_THEME)==='dark');
+  setTheme(getSaved(STORAGE_THEME)==='dark');updateRecordButtons();updateVoiceArm();
   if(!Recognition){el.start.disabled=true;el.stop.disabled=true;status('Spracherkennung nicht verfügbar','Bitte Chrome, Edge oder Safari prüfen.','error')}
 })();
 </script>
