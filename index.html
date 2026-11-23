@@ -1,828 +1,671 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f6f8f6">
-<meta name="description" content="Ein übersichtlicher Sprache-zu-Text-Editor für deutsche Diktate.">
-<title>Sprache zu Text · Deutsch</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f1815">
+<meta name="description" content="Deutsche Sprache-zu-Text-App mit Tonaufnahme.">
+<title>Sprache zu Text</title>
 <style>
-  :root{color-scheme:light;--bg:#f6f8f6;--surface:#fff;--surface-alt:#f9faf9;--ink:#182524;--muted:#687875;--line:#dde7e1;--line-strong:#bfccc5;--green:#13835d;--green-dark:#0b6c4c;--green-soft:#e6f5ee;--red:#c0444c;--red-soft:#fff0f1;--blue:#4169c5;--shadow:0 12px 42px rgba(29,57,45,.055),0 2px 9px rgba(29,57,45,.035);--radius:20px;--ease:cubic-bezier(.22,1,.36,1)}
-  body.dark-mode{color-scheme:dark;--bg:#101918;--surface:#182321;--surface-alt:#1d2926;--ink:#e8f2ee;--muted:#9aaba5;--line:#33443e;--line-strong:#50635b;--green:#37bf86;--green-dark:#249969;--green-soft:#193e2e;--red:#ff7d87;--red-soft:#4c282f;--blue:#91b2ff;--shadow:0 15px 48px rgba(0,0,0,.21)}
-  *,*::before,*::after{box-sizing:border-box}
-  html{-webkit-text-size-adjust:100%}
-  body{margin:0;min-height:100svh;padding:clamp(14px,3.1vw,36px) 14px 46px;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;transition:background-color .3s,color .3s}
-  button,select,textarea{font:inherit}
-  button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
-  button:disabled{cursor:not-allowed;opacity:.43;transform:none!important}
-  button:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(19,131,93,.25);outline-offset:3px}
-  .app{width:min(100%,940px);margin:0 auto;display:flex;flex-direction:column;gap:15px;animation:appear .5s var(--ease) both}
-  @keyframes appear{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-  .header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:4px 1px 8px}
-  .identity{display:flex;align-items:center;gap:13px;min-width:0}
-  .logo{width:47px;height:47px;display:grid;place-items:center;border-radius:16px;flex:none;background:linear-gradient(145deg,#18936a,#086c4b);color:#fff;box-shadow:0 7px 18px rgba(9,117,80,.18)}
-  .identity h1{font-size:clamp(19px,2.9vw,24px);letter-spacing:-.055em;line-height:1.16;margin:0;font-weight:800}
-  .identity p{font-size:12px;letter-spacing:.018em;color:var(--muted);margin:5px 0 0}
-  .header-actions{display:flex;align-items:center;gap:7px;flex:none}
-  .top-action{height:42px;min-width:42px;padding:0 12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 2px 7px rgba(0,0,0,.018);transition:border-color .2s,background .2s,transform .25s var(--ease),color .2s}
-  .top-action:hover:not(:disabled){border-color:var(--green);background:var(--green-soft);transform:translateY(-2px)}
-  .punct{font-size:23px;font-weight:700;line-height:1;padding-bottom:8px}
-  .top-action svg{width:19px;height:19px}
-  .divider-v{height:26px;width:1px;margin:0 3px;background:var(--line)}
-  .status-card{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:14px 18px;background:var(--surface);border:1px solid var(--line);border-radius:16px}
-  .status-info{display:flex;align-items:center;gap:12px;min-width:0}
-  .status-orb{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:var(--green-soft);flex:none}
-  .status-orb::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(19,131,93,.10)}
-  .status-card.listening .status-orb::before{animation:breath 1.8s ease-in-out infinite}
-  .status-card.error .status-orb{background:var(--red-soft)}
-  .status-card.error .status-orb::before{background:var(--red);box-shadow:none}
-  .status-card.reading #statusText{color:var(--green);animation:readingPulse 2.5s ease-in-out infinite}
-  @keyframes breath{50%{transform:scale(1.22);box-shadow:0 0 0 8px rgba(19,131,93,.06)}}
-  @keyframes readingPulse{50%{opacity:.45}}
-  .status-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
-  .status-copy strong{font-size:13px;font-weight:700;letter-spacing:-.015em}
-  .status-copy small{color:var(--muted);font-size:11px;line-height:1.4}
-  .status-right{display:flex;align-items:center;gap:15px;flex-wrap:wrap}
-  .meter{height:26px;width:82px;display:flex;align-items:center;justify-content:center;gap:3px;opacity:.65}
-  .meter i{display:block;width:3px;height:100%;background:var(--green);border-radius:9px;transform:scaleY(.12);transform-origin:center;transition:transform .11s linear}
-  .source-wrap{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}
-  .source-wrap select{border:1px solid var(--line);border-radius:10px;background:var(--surface-alt);color:var(--ink);height:36px;min-width:136px;max-width:205px;padding:0 8px;font-size:11px;font-weight:600;cursor:pointer}
-  .editor-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);transition:border-color .25s,box-shadow .25s}
-  .editor-card.recording{border-color:var(--green);box-shadow:0 0 0 3px rgba(19,131,93,.07),var(--shadow)}
-  .editor-toolbar{display:flex;align-items:center;justify-content:space-between;padding:15px 18px 7px;gap:10px}
-  .editor-heading{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
-  .read-btn{display:inline-flex;align-items:center;gap:8px;height:35px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface-alt);color:var(--ink);font-size:11px;font-weight:700;transition:background .2s,transform .2s,border-color .2s}
-  .read-btn:hover:not(:disabled){border-color:var(--green);background:var(--green-soft);transform:translateY(-1px)}
-  .read-btn svg{width:16px;height:16px}
-  .read-btn.playing{border-color:var(--green);color:var(--green);background:var(--green-soft)}
-  .text-box{width:100%;display:block;min-height:clamp(300px,43vh,450px);padding:15px 22px 22px;border:none;outline:none!important;resize:vertical;background:transparent;color:var(--ink);font-size:24px;line-height:1.68;font-weight:450;letter-spacing:-.015em;white-space:pre-wrap;overflow-wrap:break-word;caret-color:var(--green)}
-  .text-box::placeholder{color:var(--muted);opacity:.65}
-  .text-box:focus-visible{outline:0}
-  .editor-footer{min-height:54px;border-top:1px solid var(--line);background:var(--surface-alt);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 17px}
-  .word-stats{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-  .font-controls{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted)}
-  .font-btn{width:34px;height:30px;display:grid;place-items:center;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;font-size:12px;font-weight:700;transition:border-color .2s,background .2s}
-  .font-btn:hover{border-color:var(--green);background:var(--green-soft)}
-  .edit-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-  .edit-btn{display:flex;justify-content:center;align-items:center;gap:9px;min-width:0;height:52px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:13px;font-weight:650;font-size:12px;transition:transform .25s var(--ease),background .2s,border-color .2s}
-  .edit-btn:hover:not(:disabled){transform:translateY(-2px);border-color:var(--line-strong);background:var(--surface-alt)}
-  .edit-btn svg{width:17px;height:17px;flex:none}
-  .edit-btn.danger{color:var(--red)}
-  .record-controls{display:grid;grid-template-columns:minmax(0,1fr) 170px 170px;gap:10px}
-  .control-btn{border-radius:14px;height:61px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:10px;font-weight:750;font-size:14px;letter-spacing:-.015em;transition:transform .25s var(--ease),box-shadow .25s,background .2s}
-  .control-btn svg{width:19px;height:19px}
-  .control-btn:hover:not(:disabled){transform:translateY(-2px)}
-  .control-btn.primary{background:linear-gradient(110deg,#159164,#0f7855);color:#fff;border-color:transparent;box-shadow:0 8px 18px rgba(19,131,93,.18)}
-  .control-btn.primary:hover:not(:disabled){box-shadow:0 12px 22px rgba(19,131,93,.25)}
-  .control-btn.stop{background:var(--red-soft);color:var(--red);border-color:transparent}
-  .control-btn.copy{background:var(--surface);color:var(--ink)}
-  .control-btn.copy:hover{background:var(--surface-alt);border-color:var(--line-strong)}
-  .footnote{font-size:11px;line-height:1.6;color:var(--muted);text-align:center;padding:0 20px}
-  .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));max-width:calc(100% - 28px);padding:11px 18px;background:#193029;color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.18);z-index:20;font-size:12px;font-weight:600;opacity:0;pointer-events:none;transform:translate(-50%,14px);transition:opacity .25s,transform .3s var(--ease);text-align:center}
-  .toast.show{opacity:1;transform:translate(-50%,0)}
-  .hidden-svgs{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}
-  svg.icon{width:20px;height:20px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round}
-  @media(max-width:680px){body{padding:12px 9px 36px}.app{gap:11px}.header{gap:9px}.identity{gap:8px}.logo{width:37px;height:37px;border-radius:12px}.logo svg{width:20px;height:20px}.identity h1{font-size:17px}.identity p{font-size:10px;margin-top:3px}.top-action{height:36px;min-width:34px;padding:0 9px;border-radius:10px}.punct{font-size:20px;padding-bottom:7px}.divider-v{margin:0 1px}.status-card{padding:12px 13px;gap:9px}.status-right{gap:8px}.status-orb{width:30px;height:30px}.status-copy strong{font-size:12px}.status-copy small{font-size:10px}.meter{width:56px}.source-wrap span{display:none}.source-wrap select{min-width:133px;max-width:145px;height:33px;font-size:10px}.editor-toolbar{padding:11px 12px 4px}.text-box{min-height:clamp(280px,43vh,390px);padding:12px 14px 16px;font-size:21px}.editor-footer{min-height:47px;padding:8px 12px}.record-controls{grid-template-columns:1fr 1fr}.record-controls .primary{grid-column:1/-1;height:58px}.control-btn{height:49px}.edit-controls{gap:6px}.edit-btn{font-size:11px;height:48px;gap:5px}.edit-btn svg{width:15px;height:15px}.footnote{font-size:10px;padding:0 8px}}
-  @media(max-width:365px){.identity h1{font-size:15px}.logo{width:32px;height:32px}.identity p{display:none}.header-actions{gap:4px}.top-action{min-width:30px;padding:0 7px}.edit-btn{font-size:10px}.edit-btn svg{display:none}}
-  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+:root{
+  color-scheme:dark;
+  --bg:#0b1411;
+  --bg-soft:#101c18;
+  --panel:#13231d;
+  --panel-2:#172a23;
+  --panel-3:#1b3028;
+  --text:#eef6f2;
+  --muted:#99aba4;
+  --line:#294239;
+  --line-2:#355248;
+  --green:#62d39d;
+  --green-2:#2f9e6f;
+  --green-soft:rgba(98,211,157,.14);
+  --red:#f38894;
+  --red-soft:rgba(243,136,148,.12);
+  --amber:#ddb169;
+  --amber-soft:rgba(221,177,105,.14);
+  --shadow:0 18px 42px rgba(0,0,0,.28);
+  --radius:20px;
+  --font-size:22px;
+}
+body.light{
+  color-scheme:light;
+  --bg:#f4f7f4;
+  --bg-soft:#eef3ef;
+  --panel:#ffffff;
+  --panel-2:#f7faf8;
+  --panel-3:#f0f5f2;
+  --text:#172b24;
+  --muted:#64746f;
+  --line:#d9e4dd;
+  --line-2:#c7d5cd;
+  --green:#177b57;
+  --green-2:#0f6a49;
+  --green-soft:rgba(23,123,87,.08);
+  --red:#c54c57;
+  --red-soft:rgba(197,76,87,.08);
+  --amber:#a77528;
+  --amber-soft:rgba(167,117,40,.10);
+  --shadow:0 16px 40px rgba(9,35,24,.08);
+}
+*{box-sizing:border-box}
+html{height:100%;-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  min-height:100dvh;
+  background:
+    radial-gradient(circle at top left, rgba(79,161,118,.12), transparent 34%),
+    linear-gradient(180deg,var(--bg),var(--bg-soft));
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  overflow:hidden;
+}
+button,textarea,input{font:inherit}
+button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button:disabled{opacity:.38;cursor:default}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+[hidden]{display:none!important}
+.shell{
+  width:min(100%,1080px);
+  height:100dvh;
+  margin:0 auto;
+  padding:clamp(10px,1.6vw,18px);
+  padding-bottom:max(12px,env(safe-area-inset-bottom));
+}
+.app{
+  height:100%;
+  display:grid;
+  grid-template-rows:auto auto minmax(0,1fr) auto auto;
+  gap:12px;
+  min-height:0;
+}
+.header{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+}
+.brand{display:flex;align-items:flex-start;gap:14px;min-width:0}
+.brand-badge{
+  width:46px;height:46px;border-radius:15px;display:grid;place-items:center;flex:none;
+  background:linear-gradient(160deg,var(--green-2),var(--green));
+  color:#fff;box-shadow:0 10px 24px rgba(31,119,83,.22);
+}
+.brand-badge .icon{width:22px;height:22px}
+.brand-text{min-width:0}
+.brand-text h1{margin:0;font-size:clamp(26px,3.2vw,38px);line-height:1.02;letter-spacing:-.04em}
+.brand-text p{margin:5px 0 0;color:var(--muted);font-size:15px;line-height:1.3}
+.header-right{display:flex;align-items:center;gap:10px;flex:none}
+.status-pill{
+  display:flex;align-items:center;gap:10px;min-width:160px;max-width:260px;
+  padding:10px 14px;border-radius:16px;border:1px solid var(--line);
+  background:linear-gradient(180deg,var(--panel),var(--panel-2));
+  box-shadow:var(--shadow);
+}
+.status-pill .dot{width:10px;height:10px;border-radius:50%;background:#889a94;flex:none}
+.status-pill.recording .dot{background:var(--green);animation:pulse 1.7s ease-in-out infinite}
+.status-pill.paused .dot{background:var(--amber)}
+.status-pill.done .dot{background:var(--green);animation:pulse 2.7s ease-in-out 3}
+.status-pill.error .dot{background:var(--red)}
+.status-copy{min-width:0}
+.status-copy strong{display:block;font-size:13px;font-weight:780;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status-copy span{display:block;margin-top:2px;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-actions{display:flex;align-items:center;gap:8px}
+.icon-btn{
+  width:46px;height:46px;border-radius:16px;border:1px solid var(--line);
+  background:linear-gradient(180deg,var(--panel),var(--panel-2));color:var(--text);
+  display:grid;place-items:center;box-shadow:var(--shadow)
+}
+.icon-btn:hover:not(:disabled),.chip:hover:not(:disabled),.tool-btn:hover:not(:disabled),.action-btn:hover:not(:disabled){transform:translateY(-1px);border-color:var(--line-2)}
+.main-card{
+  min-height:0;display:flex;flex-direction:column;overflow:hidden;
+  border:1px solid var(--line);border-radius:var(--radius);
+  background:linear-gradient(180deg,var(--panel),var(--panel-2));box-shadow:var(--shadow)
+}
+.main-card.recording{border-color:rgba(98,211,157,.4);box-shadow:0 0 0 1px rgba(98,211,157,.12),var(--shadow)}
+.editor-top{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:14px 16px 10px 16px;border-bottom:1px solid rgba(255,255,255,.03)
+}
+.editor-title{font-size:14px;font-weight:760;color:var(--muted);letter-spacing:.01em}
+.editor-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.chip{
+  height:40px;padding:0 14px;border-radius:14px;border:1px solid var(--line);
+  background:var(--panel-3);color:var(--text);display:flex;align-items:center;gap:8px;
+  font-size:13px;font-weight:700;white-space:nowrap
+}
+.chip .icon{width:17px;height:17px}
+.chip.small{min-width:40px;justify-content:center;padding:0 12px}
+.chip.active{background:var(--green-soft);color:var(--green);border-color:rgba(98,211,157,.28)}
+.editor-area{min-height:0;display:flex;flex-direction:column;flex:1}
+#result{
+  flex:1;min-height:0;width:100%;resize:none;border:0;outline:0!important;
+  background:transparent;color:var(--text);padding:14px 18px 18px;
+  font-size:var(--font-size);line-height:1.58;letter-spacing:-.015em;caret-color:var(--green)
+}
+#result::placeholder{color:var(--muted);opacity:.75}
+.editor-bottom{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  padding:10px 16px;border-top:1px solid var(--line);background:rgba(255,255,255,.02)
+}
+.stats{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.quick-tools{display:grid;grid-template-columns:1.25fr 1fr 1fr 1fr;gap:10px}
+.tool-btn{
+  min-width:0;height:48px;border-radius:16px;border:1px solid var(--line);
+  background:linear-gradient(180deg,var(--panel),var(--panel-3));color:var(--text);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-size:15px;font-weight:760;padding:0 14px;box-shadow:var(--shadow)
+}
+.tool-btn.delete{color:var(--red)}
+.record-tools{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:10px}
+.action-btn{
+  min-width:0;height:56px;border-radius:18px;border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  font-size:16px;font-weight:800;padding:0 18px;box-shadow:var(--shadow);
+  background:linear-gradient(180deg,var(--panel),var(--panel-3));color:var(--text)
+}
+.action-btn .icon{width:18px;height:18px}
+.action-btn.start{background:linear-gradient(180deg,var(--green),var(--green-2));border-color:transparent;color:#fff}
+.action-btn.pause{color:var(--amber);background:linear-gradient(180deg,var(--panel),var(--panel-3))}
+.action-btn.stop{color:var(--red)}
+.audio-card{
+  border:1px solid var(--line);border-radius:var(--radius);
+  background:linear-gradient(180deg,var(--panel),var(--panel-2));box-shadow:var(--shadow);
+  padding:12px 14px 10px;display:flex;flex-direction:column;gap:10px
+}
+.audio-head{display:flex;align-items:center;gap:10px;min-width:0}
+.audio-title{font-size:16px;font-weight:820;white-space:nowrap;margin-right:2px}
+.audio-main-controls{display:flex;align-items:center;gap:8px;min-width:0}
+.mini-btn{
+  height:36px;min-width:36px;padding:0 10px;border-radius:12px;border:1px solid var(--line);
+  background:var(--panel-3);color:var(--text);display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:13px;font-weight:780;white-space:nowrap
+}
+.mini-btn.play{width:42px;height:42px;border-radius:50%;border-color:rgba(98,211,157,.3);color:var(--green);background:var(--green-soft);font-size:17px}
+.time{margin-left:auto;font-size:14px;font-weight:760;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.audio-side{display:flex;align-items:center;gap:6px;margin-left:2px;flex:none}
+.plain-btn{width:38px;height:38px;border:0;background:transparent;color:var(--text);display:grid;place-items:center;border-radius:12px}
+.plain-btn.delete{color:var(--red)}
+.plain-btn .icon{width:18px;height:18px}
+.seek{width:100%;margin:0;appearance:none;height:8px;border-radius:999px;background:linear-gradient(90deg,rgba(98,211,157,.24),rgba(255,255,255,.06));outline:0;cursor:pointer}
+.seek::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:var(--green);border:3px solid var(--panel)}
+.seek::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--green);border:3px solid var(--panel)}
+.audio-note{font-size:12px;color:var(--muted);min-height:16px}
+.toast{
+  position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translate(-50%,10px);
+  max-width:min(90vw,520px);padding:11px 16px;border-radius:14px;background:#183127;color:#fff;
+  box-shadow:0 18px 38px rgba(0,0,0,.28);font-size:13px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;z-index:20;text-align:center
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.icon{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.fill{fill:currentColor;stroke:none}
+@keyframes pulse{50%{opacity:.28;transform:scale(.88)}}
+@media (max-width:980px){
+  .header{align-items:flex-start;flex-direction:column}
+  .header-right{width:100%;justify-content:space-between}
+}
+@media (max-width:720px){
+  .shell{padding:10px 10px max(10px,env(safe-area-inset-bottom))}
+  .app{gap:10px}
+  .brand-badge{width:40px;height:40px;border-radius:14px}
+  .brand-text h1{font-size:22px}
+  .brand-text p{font-size:13px}
+  .status-pill{min-width:0;flex:1}
+  .editor-top{padding:12px 12px 8px}
+  #result{padding:12px 14px 15px;font-size:calc(var(--font-size) - 1px)}
+  .editor-bottom{padding:8px 12px}
+  .chip{height:36px;font-size:12px;padding:0 12px}
+  .quick-tools{grid-template-columns:1fr 1fr}
+  .record-tools{grid-template-columns:1fr 1fr 1fr}
+  .tool-btn,.action-btn{height:46px;font-size:14px;border-radius:15px}
+  .audio-card{padding:10px 10px 9px}
+  .audio-head{flex-wrap:wrap}
+  .audio-main-controls{order:2;flex:1 1 auto}
+  .audio-title{order:1;font-size:15px}
+  .time{order:3;margin-left:0}
+  .audio-side{order:4;margin-left:auto}
+}
+@media (max-width:520px){
+  .app{grid-template-rows:auto auto minmax(0,1fr) auto auto}
+  .header-right{gap:8px}
+  .top-actions .icon-btn{width:42px;height:42px;border-radius:14px}
+  .quick-tools{gap:8px}
+  .tool-btn{font-size:13px;padding:0 10px}
+  .record-tools{gap:8px}
+  .action-btn{font-size:14px;padding:0 10px}
+  .audio-main-controls{gap:6px}
+  .mini-btn{height:34px;min-width:34px;padding:0 8px;border-radius:11px;font-size:12px}
+  .mini-btn.play{width:38px;height:38px}
+  .time{font-size:13px}
+}
+@media (max-width:390px){
+  .brand{gap:10px}
+  .brand-badge{display:none}
+  .brand-text h1{font-size:20px}
+  .brand-text p{font-size:12px}
+  .status-pill{padding:8px 10px;border-radius:14px}
+  .status-copy strong{font-size:12px}
+  .status-copy span{font-size:10px}
+  .editor-actions{gap:6px}
+  .chip.small{width:36px;min-width:36px;padding:0}
+  .quick-tools{grid-template-columns:1fr 1fr}
+  .tool-btn .label-sm-hide{display:none}
+  .audio-title{font-size:14px}
+}
+@media (max-height:720px){
+  .app{gap:9px}
+  .editor-top{padding:10px 12px 7px}
+  .editor-bottom{padding:8px 12px}
+  .audio-card{padding:10px}
+  .tool-btn{height:44px}
+  .action-btn{height:50px}
+}
+body.keyboard-open{overflow:auto;height:auto;min-height:100dvh}
+body.keyboard-open .shell{height:auto;min-height:100dvh}
+body.keyboard-open .app{height:auto;min-height:100dvh}
+body.keyboard-open #result{min-height:34vh}
 
-  /* Flexibles Ein-Bildschirm-Layout: nur das Textfeld scrollt. */
-  html,body{width:100%;height:100%;overflow:hidden}
-  body{height:100vh;height:100dvh;min-height:0;padding:clamp(7px,1.4vh,14px) clamp(8px,1.6vw,18px) max(8px,env(safe-area-inset-bottom));overflow:hidden}
-  .app{height:100%;max-height:100%;min-height:0;gap:clamp(6px,1vh,11px);}
-  .header{flex:0 0 auto;padding:0 1px 2px}
-  .status-card{flex:0 0 auto;padding:8px 12px}
-  .editor-card{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
-  .editor-toolbar{flex:none;padding:9px 13px 3px}
-  .text-box{flex:1 1 auto;min-height:0;height:100%;resize:none;overflow-y:auto;padding:10px 16px;font-size:clamp(17px,2.4vw,23px);line-height:1.52}
-  .editor-footer{flex:none;min-height:40px;padding:6px 12px}
-  .edit-controls,.record-controls{flex:0 0 auto}
-  .edit-btn{height:clamp(38px,5.4vh,45px)}
-  .control-btn{height:clamp(40px,6vh,53px)}
-  .footnote{display:none}
-  .voice-arm{min-height:34px;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface-alt);color:var(--ink);font-size:11px;font-weight:700;white-space:nowrap}
-  .voice-arm[aria-pressed="true"]{background:var(--green-soft);color:var(--green);border-color:var(--green)}
-  .audio-card{flex:0 0 auto;padding:9px 12px 10px;background:var(--surface);border:1px solid var(--line-strong);border-radius:15px;box-shadow:var(--shadow);display:grid;gap:8px;min-width:0}
-  .audio-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
-  .audio-title{display:flex;align-items:center;gap:7px;min-width:0;white-space:nowrap}
-  .audio-title .icon{width:18px;height:18px;color:var(--green);flex:none}
-  .audio-title strong{font-size:13px;white-space:nowrap}
-  .audio-hint{font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .audio-actions{display:flex;gap:4px;flex:none}
-  .audio-action{border:1px solid transparent;background:transparent;color:var(--ink);font-size:11px;font-weight:650;border-radius:7px;padding:6px 7px;white-space:nowrap}
-  .audio-action:hover:not(:disabled){background:var(--green-soft)}
-  .audio-action.audio-danger{color:var(--red)}
-  .audio-playback{display:flex;align-items:center;gap:10px;min-width:0}
-  .play-button{height:33px;width:33px;border:1.5px solid var(--green);color:var(--green);background:var(--surface);border-radius:50%;font-size:13px;display:grid;place-items:center;flex:none}
-  .audio-seek{flex:1 1 auto;min-width:0;width:100%;height:16px;cursor:pointer;accent-color:var(--green)}
-  .audio-time{font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink)}
-  .audio-volume{border:0;background:transparent;color:var(--muted);padding:5px;white-space:nowrap;font-size:12px}
-  @media(max-width:680px){
-    body{padding:6px 7px max(6px,env(safe-area-inset-bottom))}
-    .app{gap:6px}.header{gap:6px}.identity h1{font-size:16px}.identity p{font-size:10px}
-    .status-card{padding:7px 9px;gap:5px}.status-orb{width:25px;height:25px}
-    .source-wrap select{min-width:105px;max-width:135px;height:30px}.meter{display:none}.voice-arm{min-height:30px;padding:0 7px;font-size:10px}
-    .editor-toolbar{padding:7px 10px 2px}.text-box{padding:9px 11px;font-size:19px;min-height:0}
-    .editor-footer{min-height:35px;padding:5px 9px}
-    .record-controls{grid-template-columns:1fr 1fr}.record-controls .primary{height:42px}
-    .control-btn{height:38px}.edit-btn{height:38px}
-    .audio-card{padding:7px 9px;gap:5px;border-radius:12px}
-    .audio-playback{gap:7px}.play-button{height:30px;width:30px}
-  }
-  @media(max-width:390px){.source-wrap select{min-width:98px;max-width:110px}.voice-arm{padding:0 5px}.audio-hint{display:none}.audio-action{padding:5px}.audio-volume{display:none}.audio-title strong{font-size:12px}.audio-seek{height:13px}}
-  @media(max-height:630px){
-    .identity p,.status-copy small,.source-wrap span,.meter{display:none}
-    .status-card{padding:5px 8px}.header .logo{width:32px;height:32px}
-    .audio-card{padding:5px 8px;gap:3px}.editor-footer{min-height:30px}
-    .edit-btn{height:32px}.record-controls .primary,.control-btn{height:34px}
-    .app{gap:4px}.audio-playback{gap:5px}
-  }
-  @media(max-height:450px){.status-card{display:none}.identity p{display:none}.audio-head{gap:4px}.audio-card{gap:2px}.editor-toolbar{padding:4px 9px 0}}
-  /* Tastatur: lieber scrollen als Schaltflächen überdecken. */
-  body.keyboard-open{overflow:auto;height:auto;min-height:100dvh}
-  body.keyboard-open .app{height:auto;min-height:100dvh}
-  body.keyboard-open .text-box{height:32vh;min-height:100px}
-
-
-  /* Diktat: Start / Pause / endgültiger Abschluss. */
-  .record-controls{grid-template-columns:minmax(0,1.5fr) minmax(0,.85fr) minmax(0,1.2fr) minmax(0,.8fr)}
-  .control-btn.finish{color:var(--red);background:var(--surface);border-color:var(--line);font-size:12px}
-  .control-btn.finish span{white-space:nowrap}
-  .audio-card{gap:4px;padding:8px 11px}
-  .audio-single-line{gap:clamp(4px,.65vw,12px);flex-wrap:nowrap}
-  .audio-player-actions{display:flex;align-items:center;gap:3px;flex:none}
-  .audio-small{border:1px solid var(--line);background:var(--surface-alt);color:var(--ink);border-radius:8px;height:30px;padding:0 6px;font-size:11px;font-weight:750;white-space:nowrap}
-  .audio-small:disabled{opacity:.4}
-  .audio-time{margin-left:auto;font-size:11px}
-  .audio-action{font-size:20px;padding:3px 6px;line-height:1}
-  .audio-actions{gap:0}
-  .audio-seek{display:block;width:100%;height:16px;flex:none;accent-color:var(--green);touch-action:pan-y}
-  .audio-hint{font-size:10px;line-height:1.1}
-  @media(max-width:680px){
-    .record-controls{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
-    .record-controls .primary{grid-column:auto;height:38px}
-    .record-controls .finish{font-size:11px}
-    .audio-card{padding:6px 8px;gap:3px}
-    .audio-title{gap:3px}.audio-title svg{display:none}
-    .audio-title strong{font-size:11px}
-    .audio-small{height:29px;padding:0 3px;font-size:10px}
-    .audio-player-actions{gap:2px}.play-button{height:28px;width:28px}
-    .audio-time{font-size:10px}
-    .audio-action{font-size:18px;padding:3px 4px}
-  }
-  @media(max-width:360px){.audio-title strong{font-size:10px}.audio-small{font-size:9px}.audio-time{font-size:9px}.audio-head{gap:2px}}
-  @media(max-height:650px){.record-controls .primary,.control-btn{height:33px}.audio-hint{display:none}.audio-card{gap:2px}}
+/* Gemeinsame, einzeilige Bedienleiste: niemals umbrechen oder horizontal hinausragen. */
+.app{grid-template-rows:auto minmax(0,1fr) auto auto}
+.command-row{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;min-width:0}
+.command-btn{
+  min-width:0;width:100%;height:52px;border:1px solid var(--line);border-radius:13px;
+  padding:4px 5px;display:flex;align-items:center;justify-content:center;gap:7px;
+  background:linear-gradient(180deg,var(--panel),var(--panel-3));color:var(--text);
+  font-size:clamp(10px,1.13vw,13px);font-weight:740;white-space:nowrap;
+  letter-spacing:-.02em;box-shadow:0 5px 14px rgba(0,0,0,.09);
+  transition:background-color .18s,border-color .18s,transform .16s,opacity .18s;
+}
+.command-btn .icon{width:16px;height:16px;flex:none}
+.command-btn.command-start{background:linear-gradient(140deg,var(--green),var(--green-2));color:#fff;border-color:transparent}
+.command-btn.command-pause{color:var(--amber)}
+.command-btn.command-stop,.command-btn.command-delete{color:var(--red)}
+.command-btn:hover:not(:disabled){transform:translateY(-1px);border-color:var(--line-2)}
+.command-btn:active:not(:disabled){transform:translateY(0)}
+.label-short{display:none}
+@media(max-width:920px){
+  .command-row{gap:5px}
+  .command-btn{flex-direction:column;height:56px;gap:3px;font-size:10px;letter-spacing:-.035em;padding:4px 1px}
+  .command-btn .icon{width:18px;height:18px}
+  .label-long{display:none}
+  .label-short{display:inline}
+}
+@media(max-width:520px){
+  .app{grid-template-rows:auto minmax(0,1fr) auto auto}
+  .command-row{gap:4px}
+  .command-btn{height:53px;border-radius:10px;font-size:9px}
+  .command-btn .icon{width:17px;height:17px}
+}
+@media(max-width:345px){
+  .shell{padding-left:7px;padding-right:7px}
+  .command-row{gap:3px}
+  .command-btn{font-size:8.5px;height:50px;border-radius:9px}
+  .command-btn .icon{height:16px;width:16px}
+}
+@media(max-height:640px){.command-btn{height:44px}.command-row{gap:4px}}
+@media(prefers-reduced-motion:reduce){.command-btn{transition:none}}
 </style>
 </head>
 <body>
-<svg class="hidden-svgs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+<svg width="0" height="0" aria-hidden="true" style="position:absolute;overflow:hidden"><defs>
   <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/></symbol>
-  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 14.1A9 9 0 0 1 9.9 3.5 9 9 0 1 0 20.5 14.1Z"/></symbol>
-  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></symbol>
-  <symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5ZM15 9a5 5 0 0 1 0 6m3-9a9 9 0 0 1 0 12"/></symbol>
-  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect class="fill" x="5" y="4" width="5" height="16" rx="1"/><rect class="fill" x="14" y="4" width="5" height="16" rx="1"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect class="fill" x="4" y="4" width="16" height="16" rx="2"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path class="fill" d="M8 5v14l11-7z"/></symbol>
   <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
-  <symbol id="i-delete" viewBox="0 0 24 24"><path d="m9 4-7 8 7 8h11a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H9Zm3 5 6 6m0-6-6 6"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m3 0-1 15H6L5 6m5 4v7m4-7v7"/></symbol>
+  <symbol id="i-backspace" viewBox="0 0 24 24"><path d="m9 4-7 8 7 8h11a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H9Zm3 5 6 6m0-6-6 6"/></symbol>
   <symbol id="i-undo" viewBox="0 0 24 24"><path d="m9 14-5-5 5-5M4 9h10a6 6 0 1 1 0 12h-3"/></symbol>
-</svg>
-<main class="app">
-  <header class="header">
-    <div class="identity">
-      <div class="logo"><svg class="icon" aria-hidden="true"><use href="#i-mic"/></svg></div>
-      <div><h1>Sprache zu Text</h1><p>Deutsch diktieren · intelligent bearbeiten</p></div>
-    </div>
-    <div class="header-actions" aria-label="Satzzeichen und Design">
-      <button class="top-action punct" id="btnPeriod" title="Punkt am Textende einfügen" aria-label="Punkt am Textende einfügen">.</button>
-      <button class="top-action punct" id="btnComma" title="Komma am Textende einfügen" aria-label="Komma am Textende einfügen">,</button>
-      <div class="divider-v" aria-hidden="true"></div>
-      <button class="top-action" id="btnThemeToggle" title="Dunkel- oder Hellmodus" aria-label="Design wechseln"><svg class="icon"><use id="themeIcon" href="#i-moon"/></svg></button>
-    </div>
-  </header>
+  <symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5ZM15 9a5 5 0 0 1 0 6m3-9a9 9 0 0 1 0 12"/></symbol>
+  <symbol id="i-minus10" viewBox="0 0 24 24"><path d="M11 17H3m0 0 3-3m-3 3 3 3"/><path d="M21 7a8 8 0 1 0 0 10"/></symbol>
+  <symbol id="i-plus10" viewBox="0 0 24 24"><path d="M13 17h8m0 0-3-3m3 3-3 3"/><path d="M3 7a8 8 0 1 1 0 10"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4M4 20h16"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 14.1A9 9 0 0 1 9.9 3.5 9 9 0 1 0 20.5 14.1Z"/></symbol>
+</defs></svg>
 
-  <section class="status-card" id="statusCard" aria-live="polite">
-    <div class="status-info">
-      <div class="status-orb" aria-hidden="true"></div>
-      <div class="status-copy"><strong id="statusText">Bereit zum Diktieren</strong><small id="statusDetail">Zum Starten auf das Mikrofon klicken.</small></div>
-    </div>
-    <div class="status-right">
-      <div class="meter" id="meter" aria-label="Mikrofonpegel" title="Eingangspegel des Mikrofons">
-        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+<div class="shell">
+  <main class="app">
+    <header class="header">
+      <div class="brand">
+        <div class="brand-badge"><svg class="icon"><use href="#i-mic"></use></svg></div>
+        <div class="brand-text">
+          <h1>Sprache zu Text</h1>
+          <p>Deutsch sprechen. Text und Tonaufnahme bleiben sauber und übersichtlich.</p>
+        </div>
       </div>
-      <label class="source-wrap"><span>Audioquelle</span>
-        <select id="audioSource" aria-label="Audioquelle wählen">
-          <option value="mic">Mikrofon / Raum</option>
-          <option value="tab">Tab-Audio (PC)</option>
-        </select>
-      </label>
-      <button class="voice-arm" id="voiceArm" type="button" aria-pressed="false" title="Sprachstart einschalten: Mikrofon wartet auf 'Sprechen starten'">Sprachstart: Aus</button>
-    </div>
-  </section>
+      <div class="header-right">
+        <div class="status-pill" id="status">
+          <div class="dot"></div>
+          <div class="status-copy">
+            <strong id="statusText">Bereit</strong>
+            <span id="statusSub">Mikrofon starten, wenn Sie diktieren möchten.</span>
+          </div>
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" id="theme" aria-label="Design wechseln" title="Design wechseln">
+            <svg class="icon"><use id="themeUse" href="#i-sun"></use></svg>
+          </button>
+        </div>
+      </div>
+    </header>
 
-  <section class="editor-card" id="editorCard">
-    <div class="editor-toolbar"><span class="editor-heading">Ihr Text</span>
-      <button class="read-btn" id="btnSpeak" title="Text laut vorlesen" aria-label="Text vorlesen"><svg class="icon"><use id="speakIcon" href="#i-volume"/></svg><span id="speakLabel">Text vorlesen</span></button>
-    </div>
-    <textarea id="resultText" class="text-box" spellcheck="true" autocapitalize="sentences" lang="de" placeholder="Sprechen Sie ganz normal. Ihr Text erscheint hier …" aria-label="Erkannter Text"></textarea>
-    <div class="editor-footer">
-      <span class="word-stats" id="wordStats">0 Wörter · 0 Zeichen</span>
-      <div class="font-controls"><span>Schriftgröße</span>
-        <button class="font-btn" id="fontDown" title="Schrift verkleinern" aria-label="Schrift verkleinern">A−</button>
-        <button class="font-btn" id="fontUp" title="Schrift vergrößern" aria-label="Schrift vergrößern">A+</button>
+    <section class="main-card" id="editor">
+      <div class="editor-top">
+        <div class="editor-title">Ihr Text</div>
+        <div class="editor-actions">
+          <button class="chip" id="read"><svg class="icon"><use href="#i-volume"></use></svg><span id="readLabel">Text vorlesen</span></button>
+          <button class="chip small" id="smaller" title="Schrift verkleinern">A−</button>
+          <button class="chip small" id="bigger" title="Schrift vergrößern">A+</button>
+        </div>
       </div>
-    </div>
-  </section>
+      <div class="editor-area">
+        <textarea id="result" placeholder="Sprechen Sie auf Deutsch. Der Text erscheint hier …" spellcheck="true" autocapitalize="sentences" lang="de"></textarea>
+      </div>
+      <div class="editor-bottom">
+        <div class="stats" id="stats">0 Wörter · 0 Zeichen</div>
+      </div>
+    </section>
 
-  <div class="edit-controls">
-    <button class="edit-btn" id="btnDeleteWord" title="Letztes Wort löschen"><svg class="icon" aria-hidden="true"><use href="#i-delete"/></svg><span>1 Wort löschen</span></button>
-    <button class="edit-btn danger" id="btnClearAll" title="Gesamten Text löschen"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg><span>Alles löschen</span></button>
-    <button class="edit-btn" id="btnUndo" disabled title="Letzte Änderung rückgängig machen"><svg class="icon" aria-hidden="true"><use href="#i-undo"/></svg><span>Wiederherstellen</span></button>
-  </div>
-  <div class="record-controls">
-    <button class="control-btn primary" id="btnStart"><svg class="icon" aria-hidden="true"><use href="#i-mic"/></svg><span>Sprechen starten</span></button>
-    <button class="control-btn stop" id="btnStop" disabled><svg class="icon" aria-hidden="true"><use href="#i-stop"/></svg><span>Pause</span></button>
-    <button class="control-btn finish" id="btnFinish" disabled title="Aufnahme endgültig beenden">■ <span>Aufnahme beenden</span></button>
-    <button class="control-btn copy" id="btnCopy"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg><span>Kopieren</span></button>
-  </div>
-  <section class="audio-card" id="audioCard" aria-label="Tonaufnahme">
-    <div class="audio-head audio-single-line">
-      <div class="audio-title"><svg class="icon" aria-hidden="true"><use href="#i-volume"/></svg><strong>Tonaufnahme</strong></div>
-      <div class="audio-player-actions">
-        <button class="audio-small" id="audioBack" disabled title="10 Sekunden zurück" aria-label="10 Sekunden zurück">−10s</button>
-        <button class="play-button" id="audioPlay" disabled aria-label="Aufnahme abspielen">▶</button>
-        <button class="audio-small" id="audioForward" disabled title="10 Sekunden vor" aria-label="10 Sekunden vor">+10s</button>
+    <!-- Eine einzige Bedienleiste auf allen Geräten; klare vollständige Beschriftungen bleiben für Screenreader erhalten. -->
+    <nav class="command-row" aria-label="Diktat und Textbearbeitung">
+      <button class="command-btn command-start" id="start" aria-label="Starten" title="Aufnahme starten oder fortsetzen">
+        <svg class="icon"><use href="#i-mic"></use></svg><span class="label-long" id="startLabel">Starten</span><span class="label-short" id="startShort">Start</span>
+      </button>
+      <button class="command-btn command-pause" id="pauseBtn" aria-label="Pause" title="Aufnahme pausieren">
+        <svg class="icon fill"><use href="#i-pause"></use></svg><span>Pause</span>
+      </button>
+      <button class="command-btn command-stop" id="stopBtn" aria-label="Stoppen" title="Aufnahme beenden und Tondatei erstellen">
+        <svg class="icon fill"><use href="#i-stop"></use></svg><span class="label-long">Stoppen</span><span class="label-short">Stopp</span>
+      </button>
+      <button class="command-btn" id="copyBtn" aria-label="Kopieren" title="Gesamten Text kopieren">
+        <svg class="icon"><use href="#i-copy"></use></svg><span class="label-long">Kopieren</span><span class="label-short">Kopie</span>
+      </button>
+      <button class="command-btn" id="deleteWord" aria-label="1 Wort löschen" title="Letztes Wort löschen">
+        <svg class="icon"><use href="#i-backspace"></use></svg><span class="label-long">1 Wort löschen</span><span class="label-short">1 Wort</span>
+      </button>
+      <button class="command-btn" id="undo" aria-label="Wiederherstellen" title="Letzte Änderung wiederherstellen">
+        <svg class="icon"><use href="#i-undo"></use></svg><span class="label-long">Wiederherstellen</span><span class="label-short">Zurück</span>
+      </button>
+      <button class="command-btn command-delete" id="clear" aria-label="Alles löschen" title="Gesamten Text löschen">
+        <svg class="icon"><use href="#i-trash"></use></svg><span class="label-long">Alles löschen</span><span class="label-short">Löschen</span>
+      </button>
+    </nav>
+
+    <section class="audio-card">
+      <div class="audio-head">
+        <div class="audio-title">Tonaufnahme</div>
+        <div class="audio-main-controls">
+          <button class="mini-btn" id="back" title="10 Sekunden zurück">−10s</button>
+          <button class="mini-btn play" id="play" title="Wiedergabe"><svg class="icon fill"><use id="playIconUse" href="#i-play"></use></svg></button>
+          <button class="mini-btn" id="forward" title="10 Sekunden vor">+10s</button>
+        </div>
+        <div class="time" id="time">00:00 / 00:00</div>
+        <div class="audio-side">
+          <button class="plain-btn" id="download" title="Speichern"><svg class="icon"><use href="#i-download"></use></svg></button>
+          <button class="plain-btn delete" id="remove" title="Löschen"><svg class="icon"><use href="#i-trash"></use></svg></button>
+        </div>
       </div>
-      <span class="audio-time" id="audioTime">00:00 / 00:00</span>
-      <div class="audio-actions">
-        <button class="audio-action" id="audioDownload" disabled title="Aufnahme herunterladen" aria-label="Aufnahme herunterladen">↓</button>
-        <button class="audio-action audio-danger" id="audioDelete" disabled title="Aufnahme löschen" aria-label="Aufnahme löschen">×</button>
-      </div>
-    </div>
-    <input id="audioSeek" class="audio-seek" type="range" min="0" max="1000" value="0" disabled aria-label="Wiedergabeposition">
-    <small id="audioHint" class="audio-hint">Noch keine Aufnahme</small>
-    <audio id="audioElement" preload="metadata" hidden></audio>
-  </section>
-  <div class="footnote" id="sourceHint">Das Mikrofon hört sowohl normale Sprache als auch Ton aus einem Lautsprecher im Raum. Erkennungsqualität und Abstand hängen vom Gerät ab.</div>
-</main>
-<div class="toast" id="toast" role="status"></div>
+      <input id="seek" class="seek" type="range" min="0" max="1000" value="0">
+      <div class="audio-note" id="audioNote">Noch keine Tonaufnahme</div>
+      <audio id="audio" preload="metadata"></audio>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
 'use strict';
-// Eine einzige HTML-Datei. Die Texterkennung verwendet die Web Speech API (de-DE).
 const $ = id => document.getElementById(id);
-const el = {
-  text:$('resultText'), start:$('btnStart'), stop:$('btnStop'), finish:$('btnFinish'), copy:$('btnCopy'),
-  speak:$('btnSpeak'), speakLabel:$('speakLabel'), speakIcon:$('speakIcon'),
-  del:$('btnDeleteWord'), clear:$('btnClearAll'), undo:$('btnUndo'),
-  period:$('btnPeriod'), comma:$('btnComma'), theme:$('btnThemeToggle'),
-  themeIcon:$('themeIcon'), fontDown:$('fontDown'), fontUp:$('fontUp'),
-  stats:$('wordStats'), card:$('editorCard'), statusCard:$('statusCard'),
-  status:$('statusText'), detail:$('statusDetail'), source:$('audioSource'),
-  hint:$('sourceHint'), toast:$('toast'), voiceArm:$('voiceArm'), bars:[...$('meter').children]
+const dom = {
+  result:$('result'), editor:$('editor'), status:$('status'), statusText:$('statusText'), statusSub:$('statusSub'),
+  start:$('start'), startLabel:$('startLabel'), pause:$('pauseBtn'), stop:$('stopBtn'),
+  copy:$('copyBtn'), read:$('read'), readLabel:$('readLabel'), clear:$('clear'), del:$('deleteWord'), undo:$('undo'),
+  stats:$('stats'), theme:$('theme'), themeUse:$('themeUse'), small:$('smaller'), big:$('bigger'),
+  audio:$('audio'), seek:$('seek'), play:$('play'), playIconUse:$('playIconUse'), back:$('back'), forward:$('forward'), time:$('time'),
+  download:$('download'), remove:$('remove'), audioNote:$('audioNote'), toast:$('toast')
 };
-const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const STORAGE_TEXT='voiceDraftDe', STORAGE_THEME='voiceDraftTheme', STORAGE_FONT='voiceDraftDeFont';
-const state={
-  committed:'', wants:false, session:null, timer:null, restarting:0, token:0,
-  stream:null, audioContext:null, meterRAF:0, fontSize:24, undo:[],
-  speaking:false, utterance:null, toastTimer:0, voiceArmed:false, standby:null, standbyTimer:null, standbyGeneration:0, recorder:null, recordingStream:null, audioChunks:[], audioURL:null, audioBlob:null, audioPending:false, phase:"idle", audioActiveMs:0, audioResumeAt:0, audioDuration:0
+const SpeechEngine = window.SpeechRecognition || window.webkitSpeechRecognition;
+const KEY_TEXT = 'speech2text_de_text';
+const KEY_THEME = 'speech2text_de_theme';
+const KEY_SIZE = 'speech2text_de_size';
+const state = {
+  committed:'', phase:'idle', session:null, restart:null, undo:[], run:0,
+  media:null, stream:null, chunks:[], audioBlob:null, audioURL:'', audioSeconds:0, recordedMs:0, resumedAt:0,
+  fontSize:22, speaking:false, utterance:null, toastTimer:0
 };
-function getSaved(key){try{return localStorage.getItem(key)}catch(_){return null}}
-function save(key,value){try{localStorage.setItem(key,value)}catch(_){}}
-function toast(message){el.toast.textContent=message;el.toast.classList.add('show');clearTimeout(state.toastTimer);state.toastTimer=setTimeout(()=>el.toast.classList.remove('show'),2500)}
-function status(title,detail='',mode='ready'){
-  el.status.textContent=title;el.detail.textContent=detail;
-  el.statusCard.classList.toggle('listening',mode==='listening');
-  el.statusCard.classList.toggle('error',mode==='error');
-  el.statusCard.classList.toggle('reading',mode==='reading');
+function saved(key){try{return localStorage.getItem(key)}catch(_){return null}}
+function save(key,val){try{localStorage.setItem(key,val)}catch(_){}}
+function notice(msg){dom.toast.textContent=msg;dom.toast.classList.add('show');clearTimeout(state.toastTimer);state.toastTimer=setTimeout(()=>dom.toast.classList.remove('show'),2300)}
+function setTheme(light){document.body.classList.toggle('light', light);dom.themeUse.setAttribute('href', light ? '#i-moon' : '#i-sun');save(KEY_THEME, light ? '1' : '0')}
+function status(text, mode='idle', sub=''){
+  dom.statusText.textContent = text;
+  dom.statusSub.textContent = sub || (mode==='recording' ? 'Sprache wird laufend erkannt.' : mode==='paused' ? 'Aufnahme ist pausiert.' : mode==='done' ? 'Text bleibt gespeichert.' : mode==='error' ? 'Bitte Mikrofon und Verbindung prüfen.' : 'Mikrofon starten, wenn Sie diktieren möchten.');
+  dom.status.className = 'status-pill' + (mode && mode!=='idle' ? ' ' + mode : '');
 }
+function count(){const t=dom.result.value;const words=t.trim()?t.trim().split(/\s+/u).length:0;dom.stats.textContent=`${words} ${words===1?'Wort':'Wörter'} · ${t.length} Zeichen`}
+// Wortzusammenführung und Satzanfänge entsprechen der getesteten Diktat-Vorlage index(5).html.
 function capitalizeSentences(text){
-  // Nur Satzanfänge groß schreiben; deutsche Substantive werden NICHT geraten.
   return text.replace(/(^|[.!?]\s*|\n\s*)([a-zäöüß])/gmu,(all,prefix,letter)=>prefix+letter.toUpperCase());
 }
-// Gesprochene Satzzeichen und Steuerbefehle nur im erkannten Text behandeln.
-// Die Anweisung "Sprechen stoppen" wird nicht in die Notiz geschrieben.
-function spokenCommands(raw){
-  let text=String(raw||'').trim();
-  const finish=/(?:^|\s)(?:aufnahme\s+beenden)(?:[.!?,\s]*)$/iu.test(text);
-  if(finish)text=text.replace(/(?:^|\s)aufnahme\s+beenden[.!?,\s]*$/iu,'');
-  const stop=/(?:^|\s)(?:sprechen\s+stoppen|sprech\s+stoppen|sprechen\s+stopp)(?:[.!?,\s]*)$/iu.test(text);
-  if(stop)text=text.replace(/(?:^|\s)(?:sprechen\s+stoppen|sprech\s+stoppen|sprechen\s+stopp)[.!?,\s]*$/iu,'');
-  text=text.replace(/(?:^|\s)sprechen\s+starten(?=$|[\s.!?,])/giu,' ');
-  text=text.replace(/(?:^|\s)(punkt|komma)(?=$|[\s.!?,])/giu,(_,word)=>word.toLowerCase()==='punkt'?' . ':' , ');
-  // Punkt/Komma ohne Leerzeichen davor; keine doppelten Zeichen.
-  text=text.replace(/\s+([.,])/gu,'$1').replace(/([.,])\s*[.,]+/gu,'$1')
-           .replace(/([.,])(?=\p{L})/gu,'$1 ')
-           .replace(/ {2,}/gu,' ').trim();
-  return {text,stop,finish};
-}
-function updateVoiceArm(){
-  el.voiceArm.setAttribute('aria-pressed',String(state.voiceArmed));
-  el.voiceArm.textContent=state.voiceArmed?'Sprachstart: An':'Sprachstart: Aus';
-  el.voiceArm.disabled=el.source.value==='tab'||!Recognition;
-}
-function clearStandby(){
-  clearTimeout(state.standbyTimer);state.standbyTimer=null;
-  state.standbyGeneration++;
-  const old=state.standby;state.standby=null;
-  if(old)try{old.abort()}catch(_){}
-}
-function scheduleStandby(delay=350){
-  clearTimeout(state.standbyTimer);
-  if(!state.voiceArmed||state.wants||state.speaking||el.source.value!=='mic'||state.phase==='finishing')return;
-  state.standbyTimer=setTimeout(()=>{
-    state.standbyTimer=null;
-    if(!state.voiceArmed||state.wants||state.standby||state.speaking)return;
-    const engine=new Recognition();
-    const generation=++state.standbyGeneration;
-    let activated=false, finishing=false, fatal=false;
-    state.standby=engine;
-    engine.lang='de-DE';engine.continuous=false;engine.interimResults=true;
-    engine.onstart=()=>{
-      if(generation===state.standbyGeneration&&state.standby===engine)
-        status('Sprachstart bereit','Sagen Sie „Sprechen starten“.','listening');
-    };
-    engine.onresult=e=>{
-      if(generation!==state.standbyGeneration||state.standby!==engine||activated)return;
-      for(let i=0;i<e.results.length;i++){
-        if(!e.results[i].isFinal)continue;
-        const heard=(e.results[i][0]?.transcript||'').trim().replace(/[.,!?]+$/u,'').trim();
-        if(state.phase==='paused'&&/^aufnahme\s+beenden$/iu.test(heard)){finishing=true;try{engine.stop()}catch(_){};return}
-        if(/^(?:sprechen|sprache)\s+starten$/iu.test(heard)){
-          activated=true;
-          try{engine.stop()}catch(_){}
-          return;
-        }
-      }
-    };
-    engine.onerror=e=>{
-      if(generation!==state.standbyGeneration)return;
-      fatal=['not-allowed','service-not-allowed','audio-capture','network','language-not-supported'].includes(e.error);
-      if(fatal){
-        state.voiceArmed=false;updateVoiceArm();
-        status('Sprachstart nicht verfügbar','Mikrofon oder Verbindung prüfen.','error');
-      }
-    };
-    engine.onend=()=>{
-      if(generation!==state.standbyGeneration)return;
-      state.standby=null;
-      if(finishing&&state.phase==='paused'){finishRecording();return}
-      if(activated&&state.voiceArmed&&!state.wants){
-        // Erst starten, nachdem der Bereitschafts-Erkenner das Mikrofon freigibt.
-        startRecording();
-      }else if(state.voiceArmed&&!fatal){
-        scheduleStandby(450);
-      }
-    };
-    try{engine.start()}catch(_){state.standby=null;state.voiceArmed=false;updateVoiceArm();toast('Sprachstart konnte nicht aktiviert werden.')}
-  },delay);
-}
-el.voiceArm.addEventListener('click',()=>{
-  state.voiceArmed=!state.voiceArmed;updateVoiceArm();
-  if(state.voiceArmed){
-    toast('Sprachstart aktiv: „Sprechen starten“ sagen.');
-    if(!state.wants)scheduleStandby(0);
-  }else{
-    clearStandby();if(!state.wants)status('Bereit zum Diktieren','Sprachstart ausgeschaltet.');
-  }
-});
 function appendSpeech(original,addition){
   const more=(addition||'').trim(); if(!more)return original;
   if(!original)return more;
   return original + (/\s$/u.test(original)?'':' ') + more;
 }
-function updateStats(){const t=el.text.value;const words=t.trim()?t.trim().split(/\s+/u).length:0;el.stats.textContent=`${words} ${words===1?'Wort':'Wörter'} · ${t.length} Zeichen`}
-function commit(text){
-  const editing=document.activeElement===el.text;
-  const start=editing?el.text.selectionStart:0, end=editing?el.text.selectionEnd:0;
-  state.committed=capitalizeSentences(text);el.text.value=state.committed;
-  if(editing)el.text.setSelectionRange(Math.min(start,state.committed.length),Math.min(end,state.committed.length));
-  save(STORAGE_TEXT,state.committed);updateStats();
+function setText(text){state.committed=capitalizeSentences(text);dom.result.value=state.committed;save(KEY_TEXT,state.committed);count()}
+function snapshot(){state.undo.push(dom.result.value);if(state.undo.length>40)state.undo.shift();dom.undo.disabled = !state.undo.length}
+function assemble(base,pieces){let text=base;for(const piece of pieces)text=appendSpeech(text,piece);return capitalizeSentences(text)}
+function snapshotResult(session,withInterim=false){const pieces=[...session.final];if(withInterim&&session.interim)pieces.push(session.interim);return assemble(session.base,pieces)}
+function drawButtons(){
+  const recording = state.phase==='recording';
+  const paused = state.phase==='paused';
+  dom.start.disabled = recording;
+  dom.pause.disabled = !recording;
+  dom.stop.disabled = !recording && !paused;
+  dom.startLabel.textContent = paused ? 'Fortsetzen' : 'Starten';
+  $('startShort').textContent = paused ? 'Weiter' : 'Start';
+  dom.start.setAttribute('aria-label', paused ? 'Fortsetzen' : 'Starten');
 }
-function snapshot(){
-  state.undo.push(el.text.value);
-  if(state.undo.length>45)state.undo.shift();
-  el.undo.disabled=false;
+function stopTracks(stream){if(stream) for(const tr of stream.getTracks()) tr.stop()}
+function clearRecorder(){if(state.media && state.media.state!=='inactive'){try{state.media.stop()}catch(_){}} stopTracks(state.stream); state.media=null; state.stream=null; state.resumedAt=0;}
+function clearAudio(){
+  if(state.audioURL) URL.revokeObjectURL(state.audioURL);
+  state.audioBlob=null; state.audioURL=''; state.audioSeconds=0; state.recordedMs=0; state.resumedAt=0;
+  dom.audio.removeAttribute('src'); dom.audio.load(); dom.audioNote.textContent='Noch keine Tonaufnahme';
+  refreshAudioButtons(); updatePlayPosition();
 }
-function updateRecordButtons(){
-  el.start.disabled=state.phase==='active'||state.phase==='finishing';
-  el.stop.disabled=state.phase!=='active';
-  el.finish.disabled=!['active','paused'].includes(state.phase);
-  el.start.querySelector('span').textContent=state.phase==='paused'?'Sprechen fortsetzen':'Sprechen starten';
-  el.source.disabled=state.phase!=='idle';
+function refreshAudioButtons(){const ready=!!state.audioURL;[dom.seek,dom.play,dom.back,dom.forward,dom.download,dom.remove].forEach(el=>el.disabled=!ready);if(!ready){dom.playIconUse.setAttribute('href','#i-play')}}
+function formatTime(s){s=Number.isFinite(s)?Math.max(0,Math.floor(s)):0;return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
+function duration(){const d=dom.audio.duration;return Number.isFinite(d)&&d>0?d:state.audioSeconds}
+function updatePlayPosition(){const current=Number.isFinite(dom.audio.currentTime)?dom.audio.currentTime:0;const total=duration();dom.time.textContent=`${formatTime(current)} / ${formatTime(total)}`;dom.seek.value=total>0?String(Math.round(Math.max(0,Math.min(1,current/total))*1000)):'0'}
+function finalizeBlob(media,parts,ms){
+  if(!parts.length) return;
+  const blob = new Blob(parts,{type:media.mimeType||parts[0].type||'audio/webm'});
+  if(!blob.size) return;
+  if(state.audioURL) URL.revokeObjectURL(state.audioURL);
+  state.audioBlob=blob; state.audioSeconds=ms/1000; state.audioURL=URL.createObjectURL(blob);
+  dom.audio.src=state.audioURL; dom.audio.load(); dom.audioNote.textContent='Aufnahme bereit';
+  refreshAudioButtons(); updatePlayPosition();
 }
-function resetSessionForEdit(){
-  if(state.session){state.session.invalid=true;try{state.session.engine.abort()}catch(_){}}
-  // onend startet die nächste Sitzung, sofern Aufnahme noch gewünscht ist.
-}
-function editTo(text){commit(text);resetSessionForEdit()}
-function insertPunctuation(mark){
-  const previous=el.text.value;
-  let t=previous.replace(/\s+$/u,'');
-  if(!t){toast('Bitte zuerst etwas diktieren.');return}
-  if(/[.,]$/u.test(t))t=t.slice(0,-1);
-  t=t.replace(/\s+$/u,'')+mark+' ';
-  snapshot();editTo(t);
-  el.text.focus({preventScroll:true});el.text.setSelectionRange(el.text.value.length,el.text.value.length);
-  toast(mark==='.'?'Punkt am Textende eingefügt.':'Komma am Textende eingefügt.');
-}
-el.period.addEventListener('click',()=>insertPunctuation('.'));
-el.comma.addEventListener('click',()=>insertPunctuation(','));
-function setTheme(dark){document.body.classList.toggle('dark-mode',dark);el.themeIcon.setAttribute('href',dark?'#i-sun':'#i-moon');save(STORAGE_THEME,dark?'dark':'light')}
-el.theme.addEventListener('click',()=>setTheme(!document.body.classList.contains('dark-mode')));
-function changeFont(step){state.fontSize=Math.min(38,Math.max(16,state.fontSize+step));el.text.style.fontSize=state.fontSize+'px';save(STORAGE_FONT,String(state.fontSize))}
-el.fontDown.addEventListener('click',()=>changeFont(-2));el.fontUp.addEventListener('click',()=>changeFont(2));
-let typingHistoryTimer=null;
-el.text.addEventListener('beforeinput',()=>{
-  if(typingHistoryTimer===null){snapshot();typingHistoryTimer=setTimeout(()=>typingHistoryTimer=null,950)}
-});
-el.text.addEventListener('input',()=>{
-  // Änderungen durch den Nutzer haben Vorrang vor verspäteten Sprachergebnissen.
-  commit(el.text.value);resetSessionForEdit();
-});
-el.del.addEventListener('click',()=>{
-  const t=el.text.value.replace(/\s+$/u,'');if(!t)return;
-  snapshot();
-  const next=t.replace(/\S+$/u,'').replace(/\s+$/u,'');
-  editTo(next);toast('Letztes Wort gelöscht.');
-});
-el.clear.addEventListener('click',()=>{
-  if(!el.text.value)return;
-  snapshot();editTo('');toast('Text gelöscht. Wiederherstellen ist möglich.');
-});
-el.undo.addEventListener('click',()=>{
-  if(!state.undo.length)return;
-  const previous=state.undo.pop();commit(previous);
-  el.undo.disabled=!state.undo.length;resetSessionForEdit();toast('Text wiederhergestellt.');
-});
-el.copy.addEventListener('click',async()=>{
-  const text=el.text.value;if(!text.trim()){toast('Kein Text zum Kopieren vorhanden.');return}
-  try{if(!navigator.clipboard?.writeText)throw new Error('clipboard unsupported');await navigator.clipboard.writeText(text)}
-  catch(_){el.text.focus({preventScroll:true});el.text.select();try{if(!document.execCommand('copy'))throw new Error('failed')}catch(__){toast('Bitte Text markieren und manuell kopieren.');return}}
-  toast('Text kopiert.');
-});
-// Mikrofon und Pegelanzeige. Dessen automatische Verstärkung wirkt auf die
-// Erkennung NUR dort, wo SpeechRecognition.start(audioTrack) verfügbar ist.
-function canUseTrackRecognition(){
-  const ua=navigator.userAgent;
-  if(/Android|iPhone|iPad|iPod/i.test(ua))return false;
-  const m=ua.match(/(?:Chrome|Chromium|Edg|OPR)\/(\d+)/i);
-  return !!(m&&Number(m[1])>=135&&/Chrome|Chromium|Edg|OPR/i.test(ua));
-}
-if(!navigator.mediaDevices?.getDisplayMedia || !canUseTrackRecognition()){
-  el.source.querySelector('option[value="tab"]').disabled=true;
-}
-el.source.addEventListener('change',()=>{
-  if(el.source.value==='tab'&&state.voiceArmed){state.voiceArmed=false;clearStandby();}
-  updateVoiceArm();
-  el.hint.textContent=el.source.value==='tab'
-    ? 'Wählen Sie beim Start einen Browser-Tab und aktivieren Sie „Tab-Audio teilen“. Nur in unterstützten Desktop-Browsern.'
-    : 'Das Mikrofon hört sowohl normale Sprache als auch Ton aus einem Lautsprecher im Raum. Erkennungsqualität und Abstand hängen vom Gerät ab.';
-});
-function stopMeter(){
-  cancelAnimationFrame(state.meterRAF);state.meterRAF=0;
-  if(state.audioContext){state.audioContext.close().catch(()=>{});state.audioContext=null}
-  for(const bar of el.bars)bar.style.transform='scaleY(.12)';
-}
-function startMeter(stream){
-  stopMeter();if(!stream?.getAudioTracks().length)return;
-  try{
-    const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
-    const ctx=new AC();state.audioContext=ctx;
-    const analyzer=ctx.createAnalyser();analyzer.fftSize=512;analyzer.smoothingTimeConstant=.77;
-    ctx.createMediaStreamSource(new MediaStream(stream.getAudioTracks())).connect(analyzer);
-    const samples=new Uint8Array(analyzer.fftSize);
-    const frame=()=>{
-      if(state.audioContext!==ctx)return;
-      analyzer.getByteTimeDomainData(samples);
-      let sq=0;for(const x of samples){const v=(x-128)/128;sq+=v*v}
-      const level=Math.min(1,Math.sqrt(sq/samples.length)*6);
-      el.bars.forEach((bar,i)=>{
-        const center=1-Math.abs(i-(el.bars.length-1)/2)/((el.bars.length-1)/2);
-        const variation=.58+center*.42;
-        bar.style.transform=`scaleY(${(.12+level*variation*.85).toFixed(3)})`;
-      });
-      state.meterRAF=requestAnimationFrame(frame);
-    };
-    frame();
-  }catch(error){console.debug('Mikrofonpegel nicht verfügbar:',error)}
-}
-function clearStream(){
-  stopMeter();if(state.stream){for(const track of state.stream.getTracks())track.stop();state.stream=null}
-}
-function stopReading(){
-  if('speechSynthesis'in window)window.speechSynthesis.cancel();
-  state.speaking=false;state.utterance=null;
-  el.speak.classList.remove('playing');el.speakIcon.setAttribute('href','#i-volume');el.speakLabel.textContent='Text vorlesen';
-}
-el.speak.addEventListener('click',()=>{
-  if(!('speechSynthesis' in window)){toast('Vorlesen wird hier nicht unterstützt.');return}
-  if(state.speaking){stopReading();status('Bereit zum Diktieren','Vorlesen beendet.');return}
-  if(!el.text.value.trim()){toast('Kein Text zum Vorlesen vorhanden.');return}
-  if(state.wants)stopRecording();
-  clearStandby();stopReading();
-  const utterance=new SpeechSynthesisUtterance(el.text.value);state.utterance=utterance;
-  utterance.lang='de-DE';utterance.rate=1;utterance.pitch=1;
-  utterance.onstart=()=>{if(state.utterance!==utterance)return;state.speaking=true;el.speak.classList.add('playing');el.speakIcon.setAttribute('href','#i-stop');el.speakLabel.textContent='Vorlesen stoppen';status('Text wird vorgelesen …','Tippen, um die Wiedergabe zu beenden.','reading')};
-  const finish=()=>{if(state.utterance!==utterance)return;stopReading();if(!state.wants){status('Bereit zum Diktieren','Vorlesen beendet.');scheduleStandby(500)}};
-  utterance.onend=finish;utterance.onerror=finish;
-  window.speechSynthesis.speak(utterance);
-});
-
-// Audio-Datei: separater Mitschnitt, ohne die Texterkennung zu ersetzen.
-const audioUI={player:$('audioElement'),play:$('audioPlay'),seek:$('audioSeek'),time:$('audioTime'),hint:$('audioHint'),download:$('audioDownload'),remove:$('audioDelete'),back:$('audioBack'),forward:$('audioForward')};
-const timeLabel=seconds=>{const n=Number.isFinite(seconds)?Math.max(0,Math.floor(seconds)):0;return `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`};
-function showAudioReady(ready){
-  for(const button of [audioUI.play,audioUI.seek,audioUI.download,audioUI.remove,audioUI.back,audioUI.forward])button.disabled=!ready;
-  if(!ready){audioUI.time.textContent='00:00 / 00:00';audioUI.seek.value='0';audioUI.play.textContent='▶'}
-}
-function discardAudio(){
-  audioUI.player.pause();audioUI.player.removeAttribute('src');audioUI.player.load();
-  if(state.audioURL){URL.revokeObjectURL(state.audioURL);state.audioURL=null}
-  state.audioBlob=null;state.audioChunks=[];state.audioDuration=0;audioUI.hint.textContent='Noch keine Aufnahme';showAudioReady(false);
-}
-function stopFileRecording(){
-  if(state.recorder&&state.recorder.state!=='inactive'){
-    try{state.recorder.requestData()}catch(_){}
-    try{state.recorder.stop()}catch(_){}
-  }
-  else if(state.recordingStream){state.recordingStream.getTracks().forEach(t=>t.stop());state.recordingStream=null}
-}
-async function startFileRecording(token){
-  if(typeof MediaRecorder==='undefined'||!navigator.mediaDevices?.getUserMedia){audioUI.hint.textContent='Audioaufnahme nicht unterstützt';return}
+async function openMicAndStart(run){
   let stream=null;
   try{
-    // Vorhandene Tonquelle auf Desktop gemeinsam nutzen; auf Mobilgeräten separat anfordern.
-    stream=state.stream?.getAudioTracks().length?state.stream:await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:true,autoGainControl:true},video:false});
-    if(!state.wants||token!==state.token){if(stream!==state.stream)stream.getTracks().forEach(t=>t.stop());state.audioPending=false;return}
-    const preferred=['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus'];
-    const type=preferred.find(t=>MediaRecorder.isTypeSupported(t));
-    const recorder=new MediaRecorder(stream,type?{mimeType:type}:undefined);
-    state.recorder=recorder;state.recordingStream=stream===state.stream?null:stream;
-    state.audioChunks=[];state.audioPending=true;audioUI.hint.textContent='Aufnahme läuft …';
-    recorder.ondataavailable=e=>{if(e.data?.size)state.audioChunks.push(e.data)};
-    recorder.onerror=()=>{audioUI.hint.textContent='Aufnahme fehlgeschlagen'};
-    recorder.onstop=()=>{
-      if(state.audioResumeAt){state.audioActiveMs+=performance.now()-state.audioResumeAt;state.audioResumeAt=0}
-      state.audioDuration=state.audioActiveMs/1000;
-      const blob=new Blob(state.audioChunks,{type:recorder.mimeType||'audio/webm'});
-      if(state.recordingStream===stream){stream.getTracks().forEach(t=>t.stop());state.recordingStream=null}
-      if(state.recorder===recorder)state.recorder=null;
-      state.audioPending=false;
-      if(blob.size){
-        if(state.audioURL)URL.revokeObjectURL(state.audioURL);
-        state.audioBlob=blob;state.audioURL=URL.createObjectURL(blob);
-        audioUI.player.src=state.audioURL;audioUI.player.load();
-        audioUI.hint.textContent='Bereit zum Anhören';showAudioReady(true);
-      }else{audioUI.hint.textContent='Keine Audiodaten erhalten';showAudioReady(false)}
-      state.audioChunks=[];
-      if(state.phase==='finishing'||state.phase==='idle')clearStream();
+    if(!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder==='undefined') throw new Error('MediaRecorder unavailable');
+    stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});
+    if(run!==state.run || !['recording','paused'].includes(state.phase)){stopTracks(stream);return}
+    const types=['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus'];
+    const type=types.find(x=>MediaRecorder.isTypeSupported?.(x));
+    const media = new MediaRecorder(stream, type ? {mimeType:type} : undefined);
+    state.media=media; state.stream=stream;
+    const parts=[]; state.chunks=parts;
+    media.ondataavailable=e=>{if(e.data?.size) parts.push(e.data)};
+    media.onerror=()=>{dom.audioNote.textContent='Audioaufnahme fehlgeschlagen'};
+    media.onstop=()=>{
+      stopTracks(stream);
+      if(state.stream===stream) state.stream=null;
+      if(state.media===media) state.media=null;
+      if(run!==state.run) return;
+      const total=state.recordedMs + (state.resumedAt ? performance.now()-state.resumedAt : 0);
+      state.recordedMs=total; state.resumedAt=0;
+      finalizeBlob(media,parts,total);
     };
-    recorder.start(1000);
-    state.audioResumeAt=performance.now();
-  }catch(err){
-    state.audioPending=false;
-    if(stream&&stream!==state.stream)stream.getTracks().forEach(t=>t.stop());
-    audioUI.hint.textContent='Nur Texterkennung verfügbar';
-    console.info('Audioaufnahme nicht verfügbar:',err);
+    media.start(1000);
+    state.resumedAt=performance.now();
+    dom.audioNote.textContent='Aufnahme läuft …';
+    if(state.phase==='paused'){
+      media.pause();
+      state.resumedAt=0;
+      dom.audioNote.textContent='Aufnahme pausiert';
+    }
+  }catch(error){
+    stopTracks(stream);
+    if(run!==state.run) return;
+    dom.audioNote.textContent='Nur Texterkennung verfügbar';
+    console.info('Tonaufnahme nicht verfügbar:',error);
+  }finally{
+    if(run===state.run && state.phase==='recording' && !state.session) launchRecognition();
   }
 }
-audioUI.play.addEventListener('click',async()=>{if(!state.audioURL)return;if(audioUI.player.paused){try{await audioUI.player.play()}catch(_){toast('Wiedergabe fehlgeschlagen.')}}else audioUI.player.pause()});
-audioUI.player.addEventListener('play',()=>audioUI.play.textContent='❚❚');
-audioUI.player.addEventListener('pause',()=>audioUI.play.textContent='▶');
-audioUI.player.addEventListener('ended',()=>audioUI.play.textContent='▶');
-function knownDuration(){
-  const native=audioUI.player.duration;
-  return Number.isFinite(native)&&native>0?native:(state.audioDuration||0);
-}
-function updateAudioPosition(){
-  const duration=knownDuration();
-  const current=Number.isFinite(audioUI.player.currentTime)?audioUI.player.currentTime:0;
-  audioUI.time.textContent=`${timeLabel(current)} / ${timeLabel(duration)}`;
-  audioUI.seek.value=duration>0?String(Math.round(Math.min(1,current/duration)*1000)):'0';
-}
-audioUI.player.addEventListener('timeupdate',updateAudioPosition);
-audioUI.player.addEventListener('durationchange',updateAudioPosition);
-audioUI.player.addEventListener('loadedmetadata',()=>{
-  // WebM aus MediaRecorder meldet auf manchen Browsern Infinity.
-  // Der Browser kann die tatsächliche Dauer durch einen großen Seek ermitteln.
-  if(!Number.isFinite(audioUI.player.duration)&&audioUI.player.seekable.length===0){
-    try{audioUI.player.currentTime=1e9}catch(_){}
-  }
-  updateAudioPosition();
-});
-audioUI.player.addEventListener('seeked',()=>{
-  if(audioUI.player.currentTime>state.audioDuration+1&&state.audioDuration>0){
-    try{audioUI.player.currentTime=0}catch(_){}
-  }
-  updateAudioPosition();
-});
-audioUI.seek.addEventListener('input',()=>{
-  const duration=knownDuration();if(duration>0){
-    try{audioUI.player.currentTime=Number(audioUI.seek.value)/1000*duration}catch(_){toast('Spulen wird von diesem Audioformat nicht unterstützt.');}
-  }
-  updateAudioPosition();
-});
-function seekBy(seconds){
-  if(!state.audioURL)return;
-  const duration=knownDuration();
-  try{audioUI.player.currentTime=Math.max(0,Math.min(duration||1e9,(audioUI.player.currentTime||0)+seconds))}catch(_){toast('Spulen ist hier nicht möglich.');}
-  updateAudioPosition();
-}
-audioUI.back.addEventListener('click',()=>seekBy(-10));
-audioUI.forward.addEventListener('click',()=>seekBy(10));
-audioUI.download.addEventListener('click',()=>{if(!state.audioURL)return;const a=document.createElement('a');a.href=state.audioURL;const ext=state.audioBlob?.type.includes('mp4')?'m4a':state.audioBlob?.type.includes('ogg')?'ogg':'webm';a.download='Deutsch_Aufnahme_'+new Date().toISOString().slice(0,19).replace(/[T:]/g,'-')+'.'+ext;document.body.append(a);a.click();a.remove()});
-audioUI.remove.addEventListener('click',()=>{if(!state.audioURL)return;discardAudio();toast('Tonaufnahme gelöscht. Der Text bleibt erhalten.')});
-showAudioReady(false);
-// Mobil-Browser verändern die tatsächlich sichtbare Höhe, wenn sich Browserleisten bewegen.
-function fitViewport(){if(!window.visualViewport)return;const vv=window.visualViewport;const hasKeyboard=document.activeElement===el.text&&vv.height<window.innerHeight*.72;document.body.classList.toggle('keyboard-open',hasKeyboard);if(!hasKeyboard)document.body.style.height=Math.round(vv.height)+'px';else document.body.style.height='auto'}
-window.visualViewport?.addEventListener('resize',fitViewport);
-window.addEventListener('resize',fitViewport);fitViewport();
-
-function pauseRecording(message='Aufnahme pausiert'){
-  if(state.phase!=='active')return;
-  state.phase='paused';state.wants=false;state.token++;
-  if(state.audioResumeAt){state.audioActiveMs+=performance.now()-state.audioResumeAt;state.audioResumeAt=0}
-  if(state.recorder?.state==='recording')try{state.recorder.pause()}catch(_){}
-  clearTimeout(state.timer);state.timer=null;updateRecordButtons();
-  if(state.session){try{state.session.engine.stop()}catch(_){}}
-  el.card.classList.remove('recording');status(message,'Mit „Sprechen starten“ fortsetzen.');
-  if(!state.session)scheduleStandby(450);
-}
-function finishRecording(){
-  if(!['active','paused'].includes(state.phase))return;
-  if(state.phase==='active'&&state.audioResumeAt){state.audioActiveMs+=performance.now()-state.audioResumeAt;state.audioResumeAt=0}
-  state.phase='finishing';state.wants=false;state.token++;
-  clearTimeout(state.timer);state.timer=null;
-  // Deaktiviert den automatischen Sprachstart, um Abschluss nicht zu verhindern.
-  clearStandby();state.voiceArmed=false;updateVoiceArm();
-  updateRecordButtons();
-  if(state.session){try{state.session.engine.stop()}catch(_){}}
-  const recorder=state.recorder;
-  if(recorder&&recorder.state!=='inactive')stopFileRecording();
-  else{clearStream();if(!state.audioURL)audioUI.hint.textContent='Kein Ton verfügbar';}
-  el.card.classList.remove('recording');
-  state.phase='idle';updateRecordButtons();
-  status('Aufnahme abgeschlossen','Der Text bleibt gespeichert. Tonaufnahme unten abspielen oder speichern.');
-}
-// Bestehende Aufrufe aus Textvorlesen / Audiofehler: Aufnahme abschließen.
-function stopRecording(message){finishRecording();if(message&&message!=='Aufnahme beendet')status(message,'Text bleibt gespeichert.');}
-function scheduleRestart(delay=300){
-  clearTimeout(state.timer);
-  if(!state.wants)return;
-  state.timer=setTimeout(()=>{state.timer=null;if(state.wants&&!state.session)launchSession()},delay);
-}
-function launchSession(){
-  if(!state.wants||state.session||!Recognition)return;
-  const engine=new Recognition();
-  engine.lang='de-DE';engine.interimResults=true;engine.continuous=false;engine.maxAlternatives=1;
-  const session={engine,base:state.committed,final:'',interim:'',invalid:false,error:''};
+function scheduleNext(delay=320){clearTimeout(state.restart); if(state.phase!=='recording') return; state.restart=setTimeout(()=>{state.restart=null; if(state.phase==='recording' && !state.session) launchRecognition()}, delay)}
+function launchRecognition(){
+  if(state.phase!=='recording' || state.session || !SpeechEngine) return;
+  const engine = new SpeechEngine();
+  engine.lang='de-DE'; engine.continuous=false; engine.interimResults=true; engine.maxAlternatives=1;
+  const session={engine,base:state.committed,final:[],interim:'',invalid:false,error:''};
   state.session=session;
-  engine.onstart=()=>{
-    if(state.session!==session)return;
-    if(!state.wants){try{engine.abort()}catch(_){};return}
-    el.card.classList.add('recording');
-    status('Ich höre zu …','Sprechen Sie in normaler Lautstärke.','listening');
-  };
-  engine.onresult=(event)=>{
-    if(state.session!==session||session.invalid)return;
-    let final='',interim='';
-    for(let i=0;i<event.results.length;i++){
-      const candidate=event.results[i]?.[0]?.transcript||'';
-      if(event.results[i].isFinal)final=appendSpeech(final,candidate);
-      else interim=appendSpeech(interim,candidate);
+  engine.onstart=()=>{ if(state.session!==session) return; if(state.phase!=='recording'){try{engine.stop()}catch(_){}} else {status('Hört zu …','recording'); dom.editor.classList.add('recording');} };
+  engine.onresult=e=>{
+    if(state.session!==session || session.invalid) return;
+    let final='', interim='';
+    // Wie in der bewährten deutschen Version werden alle Ergebnisse erneut aufgebaut.
+    for(let i=0;i<e.results.length;i++){
+      const text=e.results[i]?.[0]?.transcript||'';
+      if(e.results[i].isFinal) final=appendSpeech(final,text);
+      else interim=appendSpeech(interim,text);
     }
-    const parsedFinal=spokenCommands(final), parsedInterim=spokenCommands(interim);
-    session.final=parsedFinal.text;session.interim=parsedInterim.text;
-    el.text.value=capitalizeSentences(appendSpeech(appendSpeech(session.base,session.final),session.interim));
-    updateStats();el.text.scrollTop=el.text.scrollHeight;
-    if(parsedFinal.finish&&state.wants){finishRecording();return}
-    if(parsedFinal.stop&&state.wants){
-      toast('Sprachbefehl: Aufnahme stoppen.');
-      pauseRecording('Per Sprachbefehl pausiert');
-    }
+    session.final=final ? [final] : []; session.interim=interim;
+    dom.result.value=snapshotResult(session,true); count(); dom.result.scrollTop=dom.result.scrollHeight;
   };
-  engine.onerror=(event)=>{
-    if(state.session!==session)return;
-    session.error=event.error||'unknown';
+  engine.onerror=e=>{
+    if(state.session!==session) return;
+    session.error=e.error||'unknown';
     if(['not-allowed','service-not-allowed','audio-capture','network','language-not-supported'].includes(session.error)){
-      if(state.phase==='active'){state.phase='paused';if(state.audioResumeAt){state.audioActiveMs+=performance.now()-state.audioResumeAt;state.audioResumeAt=0}if(state.recorder?.state==='recording')try{state.recorder.pause()}catch(_){}}
-      state.wants=false;updateRecordButtons();
-      const messages={
-        'not-allowed':'Mikrofonzugriff verweigert',
-        'service-not-allowed':'Spracherkennung nicht erlaubt',
-        'audio-capture':'Kein Mikrofon verfügbar',
-        'network':'Verbindungsfehler',
-        'language-not-supported':'Deutsch wird nicht unterstützt'
-      };
-      status(messages[session.error]||'Aufnahmefehler','Berechtigung oder Verbindung prüfen.','error');
-      toast(messages[session.error]||'Spracherkennung fehlgeschlagen.');
+      if(state.phase==='recording') pauseRecord();
+      status(session.error==='network'?'Netzwerkfehler':'Mikrofon prüfen','error');
     }
   };
   engine.onend=()=>{
-    if(state.session!==session)return;
+    if(state.session!==session) return;
     state.session=null;
-    // Nach einem manuellen Eingriff den angezeigten Text nicht überschreiben.
     if(!session.invalid){
-      const completed=(!state.wants && session.interim)
-        ? appendSpeech(session.final,session.interim)
-        : session.final;
-      commit(appendSpeech(session.base,completed));
+      const pieces=[...session.final];
+      if(state.phase!=='recording' && session.interim) pieces.push(session.interim);
+      setText(assemble(session.base,pieces));
     }
-    el.card.classList.remove('recording');
-    if(state.wants){
-      status('Warte auf Sprache …','Mikrofon bleibt bereit.','listening');
-      // no-speech ist in ruhigen Räumen normal, deshalb sanft neu starten.
-      scheduleRestart(session.error==='no-speech'?600:280);
-    }else{
-      if(state.phase==='idle'&&!state.recorder)clearStream();
-      if(!['not-allowed','service-not-allowed','audio-capture','network','language-not-supported'].includes(session.error)){
-        if(!state.speaking&&state.phase==='paused')status('Aufnahme pausiert','Mit Sprechen starten fortsetzen.');
-      }
-      scheduleStandby(500);
-    }
+    dom.editor.classList.remove('recording');
+    if(state.phase==='recording'){status('Hört zu …','recording'); scheduleNext(session.error==='no-speech'?560:280)}
+    else if(state.phase==='paused'){status('Pausiert','paused')}
   };
-  try{
-    const track=state.stream?.getAudioTracks()?.[0];
-    if(track&&canUseTrackRecognition())engine.start(track);
-    else engine.start();
-  }catch(error){
-    // Mikrofon-Fallback, falls Audio-Tracks trotz Browser-Version nicht nutzbar sind.
-    if(el.source.value==='mic'){
-      try{engine.start();return}catch(_){}
-    }
-    state.session=null;state.wants=false;state.phase='paused';updateRecordButtons();if(state.recorder?.state==='recording')try{state.recorder.pause()}catch(_){};
-    status('Aufnahme konnte nicht starten','Bitte Mikrofonberechtigungen überprüfen.','error');
-    toast('Die Spracherkennung konnte nicht gestartet werden.');
-    console.warn(error);
-  }
+  try{engine.start()}catch(error){state.session=null; dom.editor.classList.remove('recording'); status('Mikrofon prüfen','error'); notice('Spracherkennung konnte nicht starten.'); console.info(error)}
 }
-async function startRecording(){
-  if(state.wants||!Recognition||state.phase==='finishing')return;
+async function startRecord(){
+  if(!SpeechEngine){notice('Deutsche Spracherkennung nicht unterstützt.'); return}
+  if(state.phase==='recording' || state.phase==='finishing') return;
+  stopRead();
   if(state.phase==='paused'){
-    stopReading();clearStandby();state.phase='active';state.wants=true;state.token++;
-    if(state.recorder?.state==='paused'){
-      try{state.recorder.resume();state.audioResumeAt=performance.now()}catch(_){audioUI.hint.textContent='Audio konnte nicht fortgesetzt werden';}
+    state.phase='recording';
+    if(state.media?.state==='paused'){
+      try{ state.media.resume(); state.resumedAt=performance.now(); dom.audioNote.textContent='Aufnahme läuft …'; }
+      catch(_){ dom.audioNote.textContent='Audio kann nicht fortgesetzt werden'; }
     }
-    updateRecordButtons();status('Aufnahme fortgesetzt','Ich höre wieder zu.','listening');
-    launchSession();
-    if(!state.recorder&&!state.audioPending)startFileRecording(state.token);
-    return;
+    drawButtons(); status('Hört zu …','recording'); if(!state.session) launchRecognition(); return;
   }
-  state.phase='active';state.audioActiveMs=0;state.audioResumeAt=0;state.audioDuration=0;
-  discardAudio();
-  stopReading();
-  clearStandby();
-  state.wants=true;const token=++state.token;
-  updateRecordButtons();status('Audioquelle wird vorbereitet …','Bitte Browserberechtigung erlauben.','listening');
-  try{
-    if(el.source.value==='tab'){
-      if(!canUseTrackRecognition()||!navigator.mediaDevices?.getDisplayMedia)throw new Error('Tab-Audio nicht unterstützt');
-      const stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true,preferCurrentTab:true,systemAudio:'include'});
-      if(!stream.getAudioTracks().length){stream.getTracks().forEach(t=>t.stop());throw new Error('Kein Tab-Audio geteilt. Bitte „Tab-Audio teilen“ auswählen.')}
-      if(!state.wants||token!==state.token){stream.getTracks().forEach(t=>t.stop());return}
-      state.stream=stream;
-    }else if(canUseTrackRecognition()&&navigator.mediaDevices?.getUserMedia){
-      // Direktes Audio-Track-Diktat, sofern unterstützt. Auto-Gain verbessert
-      // die Aufnahme je nach Mikrofon; keine Garantie für große Entfernungen.
-      try{
-        const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:true,autoGainControl:true},video:false});
-        if(!state.wants||token!==state.token){stream.getTracks().forEach(t=>t.stop());return}
-        state.stream=stream;
-      }catch(error){
-        // Web Speech kann selbst eine Mikrofonberechtigung anfordern.
-        console.debug('Standard-Mikrofon wird verwendet:',error);
-      }
-    }
-    if(!state.wants||token!==state.token)return;
-    if(state.stream){
-      for(const track of state.stream.getAudioTracks())track.addEventListener('ended',()=>{
-        if(state.wants){stopRecording('Audioquelle beendet');toast('Die Audiofreigabe wurde beendet.')}});
-      startMeter(state.stream);
-    }
-    launchSession();
-    // Die Spracherkennung hat Vorrang; der Mitschnitt läuft zusätzlich.
-    startFileRecording(token);
-  }catch(error){
-    if(!state.wants||token!==state.token)return;
-    state.wants=false;state.phase='idle';updateRecordButtons();stopFileRecording();clearStream();
-    status('Audioquelle nicht verfügbar',error.message||'Bitte Berechtigung prüfen.','error');toast(error.message||'Zugriff auf die Audioquelle fehlgeschlagen.');
-  }
+  if(state.audioURL && !confirm('Neue Aufnahme beginnen? Die bisherige Tonaufnahme wird ersetzt. Bitte vorher speichern.')) return;
+  clearAudio(); state.run++; const run=state.run; state.phase='recording'; state.recordedMs=0; state.resumedAt=0;
+  drawButtons(); status('Mikrofon startet …','recording');
+  await openMicAndStart(run);
 }
-el.start.addEventListener('click',startRecording);
-el.stop.addEventListener('click',()=>pauseRecording());
-el.finish.addEventListener('click',finishRecording);
-window.addEventListener('pagehide',()=>{
-  clearStandby();stopFileRecording();state.wants=false;clearTimeout(state.timer);
-  if(state.session){try{state.session.engine.abort()}catch(_){}}
-  clearStream();
-});
+function pauseRecord(){
+  if(state.phase!=='recording') return;
+  state.phase='paused'; clearTimeout(state.restart);
+  if(state.media?.state==='recording'){
+    if(state.resumedAt){ state.recordedMs += performance.now()-state.resumedAt; state.resumedAt=0; }
+    try{ state.media.pause(); }catch(_){ }
+  }
+  if(state.session){ try{ state.session.engine.stop(); }catch(_){ } }
+  drawButtons(); status('Pausiert','paused');
+  if(state.media) dom.audioNote.textContent='Aufnahme pausiert';
+  dom.editor.classList.remove('recording');
+}
+function stopRecord(){
+  if(!['recording','paused'].includes(state.phase)) return;
+  state.phase='finishing'; clearTimeout(state.restart);
+  if(state.session){ try{ state.session.engine.stop(); }catch(_){ } }
+  if(state.media && state.media.state!=='inactive'){ try{ state.media.stop(); }catch(_){ } }
+  else { stopTracks(state.stream); state.stream=null; state.media=null; }
+  state.phase='idle'; drawButtons(); status('Bereit','done'); dom.editor.classList.remove('recording');
+  if(!state.media && !state.audioURL) dom.audioNote.textContent='Kein Ton verfügbar';
+}
+function stopRead(){
+  if('speechSynthesis' in window) window.speechSynthesis.cancel();
+  state.speaking=false; state.utterance=null; dom.read.classList.remove('active'); dom.readLabel.textContent='Text vorlesen';
+}
+function clearSessionForEdit(){ if(state.session){ state.session.invalid=true; try{state.session.engine.abort()}catch(_){}} }
+
+dom.theme.onclick=()=>setTheme(!document.body.classList.contains('light'));
+dom.small.onclick=()=>{state.fontSize=Math.max(16,state.fontSize-2); document.documentElement.style.setProperty('--font-size',state.fontSize+'px'); save(KEY_SIZE,String(state.fontSize))};
+dom.big.onclick=()=>{state.fontSize=Math.min(36,state.fontSize+2); document.documentElement.style.setProperty('--font-size',state.fontSize+'px'); save(KEY_SIZE,String(state.fontSize))};
+
+dom.result.addEventListener('beforeinput',()=>{ if(!dom._typingTimer){ snapshot(); dom._typingTimer=setTimeout(()=>dom._typingTimer=null,900);} });
+dom.result.addEventListener('input',()=>{ setText(dom.result.value); clearSessionForEdit(); });
+
+dom.copy.onclick=async()=>{
+  const text=dom.result.value.trim(); if(!text){notice('Kein Text zum Kopieren.'); return}
+  try{ await navigator.clipboard.writeText(dom.result.value); notice('Text kopiert.'); }
+  catch(_){ dom.result.focus(); dom.result.select(); try{ document.execCommand('copy'); notice('Text kopiert.'); }catch(__){ notice('Bitte Text manuell kopieren.'); } }
+};
+dom.del.onclick=()=>{ const t=dom.result.value.replace(/\s+$/u,''); if(!t) return; snapshot(); setText(t.replace(/\S+$/u,'').replace(/\s+$/u,'')); clearSessionForEdit(); notice('Letztes Wort gelöscht.'); };
+dom.clear.onclick=()=>{ if(!dom.result.value) return; snapshot(); setText(''); clearSessionForEdit(); notice('Text gelöscht.'); };
+dom.undo.onclick=()=>{ if(!state.undo.length) return; const prev=state.undo.pop(); setText(prev); dom.undo.disabled=!state.undo.length; clearSessionForEdit(); notice('Wiederhergestellt.'); };
+
+dom.read.onclick=()=>{
+  if(!('speechSynthesis' in window)){ notice('Vorlesen wird hier nicht unterstützt.'); return; }
+  if(state.speaking){ stopRead(); return; }
+  const text=dom.result.value.trim(); if(!text){ notice('Kein Text zum Vorlesen.'); return; }
+  if(state.phase==='recording') pauseRecord();
+  const u = new SpeechSynthesisUtterance(dom.result.value);
+  u.lang='de-DE'; u.rate=1; u.pitch=1;
+  u.onstart=()=>{ state.speaking=true; dom.read.classList.add('active'); dom.readLabel.textContent='Vorlesen stoppen'; status('Wiedergabe','recording','Text wird vorgelesen.'); };
+  const finish=()=>{ if(state.utterance!==u) return; stopRead(); if(state.phase==='paused') status('Pausiert','paused'); else if(state.phase==='recording') status('Hört zu …','recording'); else status('Bereit'); };
+  u.onend=finish; u.onerror=finish; state.utterance=u; window.speechSynthesis.speak(u);
+};
+
+dom.start.onclick=startRecord; dom.pause.onclick=pauseRecord; dom.stop.onclick=stopRecord;
+
+dom.play.onclick=async()=>{ if(!state.audioURL) return; if(dom.audio.paused){ try{ await dom.audio.play(); }catch(_){ notice('Wiedergabe nicht möglich.'); } } else dom.audio.pause(); };
+[['play','#i-pause'],['pause','#i-play'],['ended','#i-play']].forEach(([ev,href])=>dom.audio.addEventListener(ev,()=>dom.playIconUse.setAttribute('href',href)));
+dom.audio.addEventListener('timeupdate',updatePlayPosition); dom.audio.addEventListener('durationchange',updatePlayPosition);
+dom.audio.addEventListener('loadedmetadata',()=>{ updatePlayPosition(); }); dom.audio.addEventListener('seeked',updatePlayPosition);
+function seekTo(sec){ if(!state.audioURL) return; try{ dom.audio.currentTime=Math.max(0,Math.min(duration(),sec)); }catch(_){ notice('Dieses Audioformat kann nicht gespult werden.'); } updatePlayPosition(); }
+dom.seek.oninput=()=>seekTo(duration()*Number(dom.seek.value)/1000);
+dom.back.onclick=()=>seekTo((dom.audio.currentTime||0)-10); dom.forward.onclick=()=>seekTo((dom.audio.currentTime||0)+10);
+dom.download.onclick=()=>{ if(!state.audioURL) return; const ext=state.audioBlob?.type.includes('mp4')?'m4a':state.audioBlob?.type.includes('ogg')?'ogg':'webm'; const a=document.createElement('a'); a.href=state.audioURL; a.download='Deutsch_Aufnahme_'+new Date().toISOString().slice(0,19).replace(/[T:]/g,'-')+'.'+ext; document.body.append(a); a.click(); a.remove(); };
+dom.remove.onclick=()=>{ if(!state.audioURL) return; clearAudio(); notice('Tonaufnahme gelöscht.'); };
+
+function adjustViewport(){
+  const vv=window.visualViewport; if(!vv) return;
+  const keyboard=document.activeElement===dom.result && vv.height<window.innerHeight*0.72;
+  document.body.classList.toggle('keyboard-open', keyboard);
+}
+window.visualViewport?.addEventListener('resize',adjustViewport); window.addEventListener('resize',adjustViewport);
+window.addEventListener('pagehide',()=>{ clearTimeout(state.restart); if(state.session) try{state.session.engine.abort()}catch(_){ } clearRecorder(); stopRead(); });
 (function init(){
-  const savedText=getSaved(STORAGE_TEXT);
-  if(savedText!==null)commit(savedText);
-  else updateStats();
-  const savedFont=Number(getSaved(STORAGE_FONT));if(savedFont>=16&&savedFont<=38){state.fontSize=savedFont;el.text.style.fontSize=savedFont+'px'}
-  setTheme(getSaved(STORAGE_THEME)==='dark');updateRecordButtons();updateVoiceArm();
-  if(!Recognition){el.start.disabled=true;el.stop.disabled=true;status('Spracherkennung nicht verfügbar','Bitte Chrome, Edge oder Safari prüfen.','error')}
+  const old=saved(KEY_TEXT); if(old!==null) setText(old); else count();
+  const size=Number(saved(KEY_SIZE)); if(size>=16 && size<=36){ state.fontSize=size; document.documentElement.style.setProperty('--font-size',size+'px'); }
+  const theme=saved(KEY_THEME); setTheme(theme==='1');
+  drawButtons(); dom.undo.disabled=true; refreshAudioButtons(); updatePlayPosition(); adjustViewport();
+  status('Bereit');
+  if(!SpeechEngine){ dom.start.disabled=true; status('Nicht verfügbar','error','Bitte Chrome, Edge oder Safari prüfen.'); }
 })();
 </script>
 </body>
