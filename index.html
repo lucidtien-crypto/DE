@@ -317,7 +317,8 @@ async function startRecord(){
     }
     drawButtons(); status('Hört zu …','recording'); if(!state.session) launchRecognition(); return;
   }
-  if(state.audioURL && !confirm('Neue Aufnahme beginnen? Die bisherige Tonaufnahme wird ersetzt. Bitte vorher speichern.')) return;
+  // Kein Browser-Popup: Ein neuer Durchlauf ersetzt die vorherige Tonaufnahme.
+  // Wer sie behalten möchte, kann vorher über das Download-Symbol speichern.
   clearAudio(); state.run++; const run=state.run; state.phase='recording'; state.recordedMs=0; state.resumedAt=0;
   drawButtons(); status('Mikrofon startet …','recording');
   await openMicAndStart(run);
