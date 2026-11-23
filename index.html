@@ -7,412 +7,135 @@
 <meta name="description" content="Deutsche Sprache-zu-Text-App mit Tonaufnahme.">
 <title>Sprache zu Text</title>
 <style>
-:root{
-  color-scheme:dark;
-  --bg:#0b1411;
-  --bg-soft:#101c18;
-  --panel:#13231d;
-  --panel-2:#172a23;
-  --panel-3:#1b3028;
-  --text:#eef6f2;
-  --muted:#99aba4;
-  --line:#294239;
-  --line-2:#355248;
-  --green:#62d39d;
-  --green-2:#2f9e6f;
-  --green-soft:rgba(98,211,157,.14);
-  --red:#f38894;
-  --red-soft:rgba(243,136,148,.12);
-  --amber:#ddb169;
-  --amber-soft:rgba(221,177,105,.14);
-  --shadow:0 18px 42px rgba(0,0,0,.28);
-  --radius:20px;
-  --font-size:22px;
-}
-body.light{
-  color-scheme:light;
-  --bg:#f4f7f4;
-  --bg-soft:#eef3ef;
-  --panel:#ffffff;
-  --panel-2:#f7faf8;
-  --panel-3:#f0f5f2;
-  --text:#172b24;
-  --muted:#64746f;
-  --line:#d9e4dd;
-  --line-2:#c7d5cd;
-  --green:#177b57;
-  --green-2:#0f6a49;
-  --green-soft:rgba(23,123,87,.08);
-  --red:#c54c57;
-  --red-soft:rgba(197,76,87,.08);
-  --amber:#a77528;
-  --amber-soft:rgba(167,117,40,.10);
-  --shadow:0 16px 40px rgba(9,35,24,.08);
-}
-*{box-sizing:border-box}
+:root{color-scheme:dark;--bg:#101916;--panel:#182720;--panel2:#1d3028;--text:#edf4ef;--muted:#a4b8ac;--stroke:#344a3d;--accent:#58c98e;--accent-bg:#244733;--warn:#e2b875;--danger:#ed98a0;--shadow:0 7px 28px #07130b35;--font-size:22px}
+body.light{color-scheme:light;--bg:#f6f8f5;--panel:#fff;--panel2:#f6faf6;--text:#172b24;--muted:#63786d;--stroke:#d8e2da;--accent:#157c55;--accent-bg:#e5f5eb;--warn:#a26e26;--danger:#be4755;--shadow:0 5px 22px #102d1a10}
+*,*::before,*::after{box-sizing:border-box}
 html{height:100%;-webkit-text-size-adjust:100%}
-body{
-  margin:0;
-  min-height:100dvh;
-  background:
-    radial-gradient(circle at top left, rgba(79,161,118,.12), transparent 34%),
-    linear-gradient(180deg,var(--bg),var(--bg-soft));
-  color:var(--text);
-  font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
-  overflow:hidden;
+body{margin:0;height:100%;height:100dvh;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+button,textarea,input{font:inherit}button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}button:disabled{opacity:.35;cursor:default}button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.shell{height:100%;height:100dvh;max-width:1260px;margin:auto;padding:clamp(9px,1.8vw,20px);padding-bottom:max(10px,env(safe-area-inset-bottom));min-width:0}
+.app{height:100%;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:clamp(8px,1.3vh,13px)}
+.header{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:43px}
+.header h1{font-size:clamp(23px,2.6vw,32px);line-height:1.1;margin:0;font-weight:780;letter-spacing:-.045em;white-space:nowrap}
+.header-right{display:flex;align-items:center;gap:9px}
+.status-pill{display:flex;align-items:center;gap:8px;border:1px solid var(--stroke);background:var(--panel);border-radius:11px;padding:9px 13px;min-width:104px;justify-content:center}
+.status-pill .dot{width:8px;height:8px;border-radius:50%;background:#869b8e;flex:none}
+.status-pill.recording .dot{background:var(--accent);animation:breathe 1.6s ease-in-out infinite}
+.status-pill.paused .dot{background:var(--warn)}.status-pill.done .dot{background:var(--accent);animation:breathe 2.7s ease-in-out 3}.status-pill.error .dot{background:var(--danger)}
+.status-pill strong{font-size:12px;white-space:nowrap;font-weight:730}.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.icon-btn{height:39px;width:39px;border:1px solid var(--stroke);border-radius:11px;display:grid;place-items:center;color:var(--text);background:var(--panel)}
+.icon{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}.fill{fill:currentColor;stroke:none}
+.main-card{min-height:0;display:flex;flex-direction:column;overflow:hidden;background:var(--panel);border:1px solid var(--stroke);border-radius:17px;box-shadow:var(--shadow)}
+.main-card.recording{border-color:var(--accent)}
+.editor-top{min-height:48px;padding:7px 12px 7px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--stroke)}
+.editor-left{display:flex;align-items:center;gap:10px;min-width:0}.editor-title{font-size:12px;font-weight:720;color:var(--muted);white-space:nowrap}.stats{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.editor-actions{display:flex;align-items:center;gap:7px}.chip{border:1px solid var(--stroke);color:var(--text);background:var(--panel2);height:33px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 10px;font-size:12px;font-weight:690;white-space:nowrap}
+.chip.small{width:34px;padding:0}.chip .icon{width:16px;height:16px}.chip.active{color:var(--accent);background:var(--accent-bg)}
+.editor-area{display:flex;min-height:0;flex:1}#result{flex:1;width:100%;min-height:0;resize:none;outline:0!important;border:0;background:transparent;color:var(--text);padding:18px 21px;font-size:var(--font-size);line-height:1.57;letter-spacing:-.014em;caret-color:var(--accent)}#result::placeholder{color:var(--muted);opacity:.77}
+.command-row{min-width:0;display:grid;grid-template-columns:1.07fr 1fr 1fr 1.12fr 1.36fr 1.45fr 1.32fr;gap:7px}
+.command-btn{height:49px;min-width:0;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 7px;border:1px solid var(--stroke);border-radius:11px;background:var(--panel);color:var(--text);font-size:clamp(10px,.97vw,13px);font-weight:710;white-space:nowrap;transition:background .15s,border-color .15s,transform .12s}
+.command-btn .icon{width:17px;height:17px}.command-btn.command-start{background:var(--accent);border-color:var(--accent);color:#0a2517}.command-btn.command-pause{color:var(--warn)}.command-btn.command-stop{color:var(--danger)}.command-btn.command-delete{color:var(--danger)}
+.command-btn:hover:not(:disabled),.icon-btn:hover:not(:disabled),.chip:hover:not(:disabled),.audio-btn:hover:not(:disabled){border-color:var(--accent)}.command-btn:active:not(:disabled){transform:scale(.98)}
+.command-btn .short-label{display:none}
+.audio-card{display:grid;grid-template-columns:auto auto auto auto minmax(54px,1fr) auto auto auto;align-items:center;gap:clamp(4px,.85vw,11px);background:var(--panel);border:1px solid var(--stroke);border-radius:14px;padding:9px 11px;box-shadow:var(--shadow);min-width:0}
+.audio-title{font-size:13px;font-weight:750;white-space:nowrap;margin-right:3px}.audio-title-short{display:none}
+.audio-btn{height:34px;min-width:34px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:1px solid var(--stroke);border-radius:9px;color:var(--text);background:var(--panel2);font-size:11px;font-weight:750;white-space:nowrap}
+.audio-btn.play{height:36px;width:36px;border-radius:50%;color:var(--accent);border-color:var(--accent)}.audio-btn .icon{height:15px;width:15px}
+.audio-btn.plain{border:0;background:transparent;min-width:31px;width:31px;padding:0}.audio-btn.danger{color:var(--danger)}
+.seek{display:block;min-width:0;width:100%;margin:0;appearance:none;-webkit-appearance:none;background:var(--stroke);border-radius:999px;height:5px;cursor:pointer;accent-color:var(--accent);touch-action:pan-y}
+.seek::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid var(--panel)}
+.seek:disabled{opacity:.4;cursor:default}
+.seek::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--panel)}
+.time{font-size:11px;white-space:nowrap;color:var(--muted);font-variant-numeric:tabular-nums}
+.toast{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translate(-50%,8px);background:#294638;color:#fff;border-radius:10px;padding:9px 14px;font-size:12px;opacity:0;pointer-events:none;transition:.2s;z-index:20;max-width:90vw;text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}
+@keyframes breathe{50%{opacity:.25;transform:scale(.9)}}
+@media(max-width:900px){
+  .command-row{grid-template-columns:1.34fr repeat(6,1fr);gap:5px}
+  .command-btn{height:47px;padding:0 2px;gap:4px;font-size:11px}
+  .command-btn .long-label{display:none}
+  .command-btn .short-label{display:inline}
 }
-button,textarea,input{font:inherit}
-button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-button:disabled{opacity:.38;cursor:default}
-button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--green);outline-offset:2px}
-[hidden]{display:none!important}
-.shell{
-  width:min(100%,1080px);
-  height:100dvh;
-  margin:0 auto;
-  padding:clamp(10px,1.6vw,18px);
-  padding-bottom:max(12px,env(safe-area-inset-bottom));
-}
-.app{
-  height:100%;
-  display:grid;
-  grid-template-rows:auto auto minmax(0,1fr) auto auto;
-  gap:12px;
-  min-height:0;
-}
-.header{
-  display:flex;align-items:center;justify-content:space-between;gap:14px;
-}
-.brand{display:flex;align-items:flex-start;gap:14px;min-width:0}
-.brand-badge{
-  width:46px;height:46px;border-radius:15px;display:grid;place-items:center;flex:none;
-  background:linear-gradient(160deg,var(--green-2),var(--green));
-  color:#fff;box-shadow:0 10px 24px rgba(31,119,83,.22);
-}
-.brand-badge .icon{width:22px;height:22px}
-.brand-text{min-width:0}
-.brand-text h1{margin:0;font-size:clamp(26px,3.2vw,38px);line-height:1.02;letter-spacing:-.04em}
-.brand-text p{margin:5px 0 0;color:var(--muted);font-size:15px;line-height:1.3}
-.header-right{display:flex;align-items:center;gap:10px;flex:none}
-.status-pill{
-  display:flex;align-items:center;gap:10px;min-width:160px;max-width:260px;
-  padding:10px 14px;border-radius:16px;border:1px solid var(--line);
-  background:linear-gradient(180deg,var(--panel),var(--panel-2));
-  box-shadow:var(--shadow);
-}
-.status-pill .dot{width:10px;height:10px;border-radius:50%;background:#889a94;flex:none}
-.status-pill.recording .dot{background:var(--green);animation:pulse 1.7s ease-in-out infinite}
-.status-pill.paused .dot{background:var(--amber)}
-.status-pill.done .dot{background:var(--green);animation:pulse 2.7s ease-in-out 3}
-.status-pill.error .dot{background:var(--red)}
-.status-copy{min-width:0}
-.status-copy strong{display:block;font-size:13px;font-weight:780;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.status-copy span{display:block;margin-top:2px;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.top-actions{display:flex;align-items:center;gap:8px}
-.icon-btn{
-  width:46px;height:46px;border-radius:16px;border:1px solid var(--line);
-  background:linear-gradient(180deg,var(--panel),var(--panel-2));color:var(--text);
-  display:grid;place-items:center;box-shadow:var(--shadow)
-}
-.icon-btn:hover:not(:disabled),.chip:hover:not(:disabled),.tool-btn:hover:not(:disabled),.action-btn:hover:not(:disabled){transform:translateY(-1px);border-color:var(--line-2)}
-.main-card{
-  min-height:0;display:flex;flex-direction:column;overflow:hidden;
-  border:1px solid var(--line);border-radius:var(--radius);
-  background:linear-gradient(180deg,var(--panel),var(--panel-2));box-shadow:var(--shadow)
-}
-.main-card.recording{border-color:rgba(98,211,157,.4);box-shadow:0 0 0 1px rgba(98,211,157,.12),var(--shadow)}
-.editor-top{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  padding:14px 16px 10px 16px;border-bottom:1px solid rgba(255,255,255,.03)
-}
-.editor-title{font-size:14px;font-weight:760;color:var(--muted);letter-spacing:.01em}
-.editor-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.chip{
-  height:40px;padding:0 14px;border-radius:14px;border:1px solid var(--line);
-  background:var(--panel-3);color:var(--text);display:flex;align-items:center;gap:8px;
-  font-size:13px;font-weight:700;white-space:nowrap
-}
-.chip .icon{width:17px;height:17px}
-.chip.small{min-width:40px;justify-content:center;padding:0 12px}
-.chip.active{background:var(--green-soft);color:var(--green);border-color:rgba(98,211,157,.28)}
-.editor-area{min-height:0;display:flex;flex-direction:column;flex:1}
-#result{
-  flex:1;min-height:0;width:100%;resize:none;border:0;outline:0!important;
-  background:transparent;color:var(--text);padding:14px 18px 18px;
-  font-size:var(--font-size);line-height:1.58;letter-spacing:-.015em;caret-color:var(--green)
-}
-#result::placeholder{color:var(--muted);opacity:.75}
-.editor-bottom{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
-  padding:10px 16px;border-top:1px solid var(--line);background:rgba(255,255,255,.02)
-}
-.stats{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-.quick-tools{display:grid;grid-template-columns:1.25fr 1fr 1fr 1fr;gap:10px}
-.tool-btn{
-  min-width:0;height:48px;border-radius:16px;border:1px solid var(--line);
-  background:linear-gradient(180deg,var(--panel),var(--panel-3));color:var(--text);
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  font-size:15px;font-weight:760;padding:0 14px;box-shadow:var(--shadow)
-}
-.tool-btn.delete{color:var(--red)}
-.record-tools{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:10px}
-.action-btn{
-  min-width:0;height:56px;border-radius:18px;border:1px solid var(--line);
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  font-size:16px;font-weight:800;padding:0 18px;box-shadow:var(--shadow);
-  background:linear-gradient(180deg,var(--panel),var(--panel-3));color:var(--text)
-}
-.action-btn .icon{width:18px;height:18px}
-.action-btn.start{background:linear-gradient(180deg,var(--green),var(--green-2));border-color:transparent;color:#fff}
-.action-btn.pause{color:var(--amber);background:linear-gradient(180deg,var(--panel),var(--panel-3))}
-.action-btn.stop{color:var(--red)}
-.audio-card{
-  border:1px solid var(--line);border-radius:var(--radius);
-  background:linear-gradient(180deg,var(--panel),var(--panel-2));box-shadow:var(--shadow);
-  padding:12px 14px 10px;display:flex;flex-direction:column;gap:10px
-}
-.audio-head{display:flex;align-items:center;gap:10px;min-width:0}
-.audio-title{font-size:16px;font-weight:820;white-space:nowrap;margin-right:2px}
-.audio-main-controls{display:flex;align-items:center;gap:8px;min-width:0}
-.mini-btn{
-  height:36px;min-width:36px;padding:0 10px;border-radius:12px;border:1px solid var(--line);
-  background:var(--panel-3);color:var(--text);display:flex;align-items:center;justify-content:center;gap:6px;
-  font-size:13px;font-weight:780;white-space:nowrap
-}
-.mini-btn.play{width:42px;height:42px;border-radius:50%;border-color:rgba(98,211,157,.3);color:var(--green);background:var(--green-soft);font-size:17px}
-.time{margin-left:auto;font-size:14px;font-weight:760;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
-.audio-side{display:flex;align-items:center;gap:6px;margin-left:2px;flex:none}
-.plain-btn{width:38px;height:38px;border:0;background:transparent;color:var(--text);display:grid;place-items:center;border-radius:12px}
-.plain-btn.delete{color:var(--red)}
-.plain-btn .icon{width:18px;height:18px}
-.seek{width:100%;margin:0;appearance:none;height:8px;border-radius:999px;background:linear-gradient(90deg,rgba(98,211,157,.24),rgba(255,255,255,.06));outline:0;cursor:pointer}
-.seek::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:var(--green);border:3px solid var(--panel)}
-.seek::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--green);border:3px solid var(--panel)}
-.audio-note{font-size:12px;color:var(--muted);min-height:16px}
-.toast{
-  position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translate(-50%,10px);
-  max-width:min(90vw,520px);padding:11px 16px;border-radius:14px;background:#183127;color:#fff;
-  box-shadow:0 18px 38px rgba(0,0,0,.28);font-size:13px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;z-index:20;text-align:center
-}
-.toast.show{opacity:1;transform:translate(-50%,0)}
-.icon{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
-.fill{fill:currentColor;stroke:none}
-@keyframes pulse{50%{opacity:.28;transform:scale(.88)}}
-@media (max-width:980px){
-  .header{align-items:flex-start;flex-direction:column}
-  .header-right{width:100%;justify-content:space-between}
-}
-@media (max-width:720px){
-  .shell{padding:10px 10px max(10px,env(safe-area-inset-bottom))}
-  .app{gap:10px}
-  .brand-badge{width:40px;height:40px;border-radius:14px}
-  .brand-text h1{font-size:22px}
-  .brand-text p{font-size:13px}
-  .status-pill{min-width:0;flex:1}
-  .editor-top{padding:12px 12px 8px}
-  #result{padding:12px 14px 15px;font-size:calc(var(--font-size) - 1px)}
-  .editor-bottom{padding:8px 12px}
-  .chip{height:36px;font-size:12px;padding:0 12px}
-  .quick-tools{grid-template-columns:1fr 1fr}
-  .record-tools{grid-template-columns:1fr 1fr 1fr}
-  .tool-btn,.action-btn{height:46px;font-size:14px;border-radius:15px}
-  .audio-card{padding:10px 10px 9px}
-  .audio-head{flex-wrap:wrap}
-  .audio-main-controls{order:2;flex:1 1 auto}
-  .audio-title{order:1;font-size:15px}
-  .time{order:3;margin-left:0}
-  .audio-side{order:4;margin-left:auto}
-}
-@media (max-width:520px){
-  .app{grid-template-rows:auto auto minmax(0,1fr) auto auto}
-  .header-right{gap:8px}
-  .top-actions .icon-btn{width:42px;height:42px;border-radius:14px}
-  .quick-tools{gap:8px}
-  .tool-btn{font-size:13px;padding:0 10px}
-  .record-tools{gap:8px}
-  .action-btn{font-size:14px;padding:0 10px}
-  .audio-main-controls{gap:6px}
-  .mini-btn{height:34px;min-width:34px;padding:0 8px;border-radius:11px;font-size:12px}
-  .mini-btn.play{width:38px;height:38px}
-  .time{font-size:13px}
-}
-@media (max-width:390px){
-  .brand{gap:10px}
-  .brand-badge{display:none}
-  .brand-text h1{font-size:20px}
-  .brand-text p{font-size:12px}
-  .status-pill{padding:8px 10px;border-radius:14px}
-  .status-copy strong{font-size:12px}
-  .status-copy span{font-size:10px}
-  .editor-actions{gap:6px}
-  .chip.small{width:36px;min-width:36px;padding:0}
-  .quick-tools{grid-template-columns:1fr 1fr}
-  .tool-btn .label-sm-hide{display:none}
-  .audio-title{font-size:14px}
-}
-@media (max-height:720px){
-  .app{gap:9px}
-  .editor-top{padding:10px 12px 7px}
-  .editor-bottom{padding:8px 12px}
-  .audio-card{padding:10px}
-  .tool-btn{height:44px}
-  .action-btn{height:50px}
-}
-body.keyboard-open{overflow:auto;height:auto;min-height:100dvh}
-body.keyboard-open .shell{height:auto;min-height:100dvh}
-body.keyboard-open .app{height:auto;min-height:100dvh}
-body.keyboard-open #result{min-height:34vh}
-
-/* Gemeinsame, einzeilige Bedienleiste: niemals umbrechen oder horizontal hinausragen. */
-.app{grid-template-rows:auto minmax(0,1fr) auto auto}
-.command-row{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;min-width:0}
-.command-btn{
-  min-width:0;width:100%;height:52px;border:1px solid var(--line);border-radius:13px;
-  padding:4px 5px;display:flex;align-items:center;justify-content:center;gap:7px;
-  background:linear-gradient(180deg,var(--panel),var(--panel-3));color:var(--text);
-  font-size:clamp(10px,1.13vw,13px);font-weight:740;white-space:nowrap;
-  letter-spacing:-.02em;box-shadow:0 5px 14px rgba(0,0,0,.09);
-  transition:background-color .18s,border-color .18s,transform .16s,opacity .18s;
-}
-.command-btn .icon{width:16px;height:16px;flex:none}
-.command-btn.command-start{background:linear-gradient(140deg,var(--green),var(--green-2));color:#fff;border-color:transparent}
-.command-btn.command-pause{color:var(--amber)}
-.command-btn.command-stop,.command-btn.command-delete{color:var(--red)}
-.command-btn:hover:not(:disabled){transform:translateY(-1px);border-color:var(--line-2)}
-.command-btn:active:not(:disabled){transform:translateY(0)}
-.label-short{display:none}
-@media(max-width:920px){
-  .command-row{gap:5px}
-  .command-btn{flex-direction:column;height:56px;gap:3px;font-size:10px;letter-spacing:-.035em;padding:4px 1px}
-  .command-btn .icon{width:18px;height:18px}
-  .label-long{display:none}
-  .label-short{display:inline}
-}
-@media(max-width:520px){
-  .app{grid-template-rows:auto minmax(0,1fr) auto auto}
+@media(max-width:670px){
+  .shell{padding:9px 8px max(8px,env(safe-area-inset-bottom))}.app{gap:8px}
+  .header{min-height:38px}.header h1{font-size:21px}.status-pill{padding:8px 9px;min-width:84px}.icon-btn{height:35px;width:35px}
+  .editor-top{min-height:42px;padding:6px 9px}.editor-actions{gap:5px}.chip{height:30px;padding:0 8px}.chip.small{height:30px;width:30px}
+  #result{padding:12px 13px;font-size:calc(var(--font-size) - 1px)}
   .command-row{gap:4px}
-  .command-btn{height:53px;border-radius:10px;font-size:9px}
-  .command-btn .icon{width:17px;height:17px}
+  .command-btn{height:44px;flex-direction:column;gap:2px;font-size:10px;border-radius:10px}
+  .command-btn .icon{width:18px;height:18px}
+  .command-btn .short-label{display:none}
+  .command-btn.command-start .short-label{display:inline;font-size:10px}
+  .command-btn.command-delete .short-label{display:inline;font-size:9px}
+  .audio-card{padding:8px 7px;gap:4px;grid-template-columns:auto auto auto auto minmax(32px,1fr) auto auto auto}
+  .audio-title{font-size:11px;margin-right:0}.audio-title-long{display:none}.audio-title-short{display:inline}
+  .audio-btn{min-width:29px;height:31px;border-radius:8px;padding:0 2px;font-size:10px}
+  .audio-btn.play{height:33px;width:33px}.audio-btn.plain{min-width:27px;width:27px}
+  .time{font-size:9.5px;letter-spacing:-.055em}
 }
-@media(max-width:345px){
-  .shell{padding-left:7px;padding-right:7px}
-  .command-row{gap:3px}
-  .command-btn{font-size:8.5px;height:50px;border-radius:9px}
-  .command-btn .icon{height:16px;width:16px}
-}
-@media(max-height:640px){.command-btn{height:44px}.command-row{gap:4px}}
-@media(prefers-reduced-motion:reduce){.command-btn{transition:none}}
+@media(max-width:350px){.shell{padding-left:6px;padding-right:6px}.header h1{font-size:19px}.command-row{gap:3px}.command-btn{height:42px}.command-btn .icon{width:16px;height:16px}.audio-card{gap:3px;padding:7px 6px}.audio-btn{min-width:27px}.audio-btn.play{width:31px;height:31px}.audio-btn.plain{width:25px;min-width:25px}.time{font-size:9px}.chip.read .read-label{display:none}}
+@media(max-height:650px){.app{gap:6px}.editor-top{min-height:36px}.command-btn{height:41px}.audio-card{padding-top:6px;padding-bottom:6px}}
+@media(max-height:440px){.header{min-height:32px}.command-btn{height:35px}.audio-card{padding-top:4px;padding-bottom:4px}.chip{height:28px}}
+body.keyboard-open{overflow:auto;height:auto;min-height:100dvh}body.keyboard-open .shell{height:auto;min-height:100dvh}body.keyboard-open .app{height:auto;min-height:100dvh}body.keyboard-open #result{min-height:36vh}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <svg width="0" height="0" aria-hidden="true" style="position:absolute;overflow:hidden"><defs>
-  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/></symbol>
-  <symbol id="i-pause" viewBox="0 0 24 24"><rect class="fill" x="5" y="4" width="5" height="16" rx="1"/><rect class="fill" x="14" y="4" width="5" height="16" rx="1"/></symbol>
-  <symbol id="i-stop" viewBox="0 0 24 24"><rect class="fill" x="4" y="4" width="16" height="16" rx="2"/></symbol>
-  <symbol id="i-play" viewBox="0 0 24 24"><path class="fill" d="M8 5v14l11-7z"/></symbol>
-  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
-  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m3 0-1 15H6L5 6m5 4v7m4-7v7"/></symbol>
-  <symbol id="i-backspace" viewBox="0 0 24 24"><path d="m9 4-7 8 7 8h11a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H9Zm3 5 6 6m0-6-6 6"/></symbol>
-  <symbol id="i-undo" viewBox="0 0 24 24"><path d="m9 14-5-5 5-5M4 9h10a6 6 0 1 1 0 12h-3"/></symbol>
-  <symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5ZM15 9a5 5 0 0 1 0 6m3-9a9 9 0 0 1 0 12"/></symbol>
-  <symbol id="i-minus10" viewBox="0 0 24 24"><path d="M11 17H3m0 0 3-3m-3 3 3 3"/><path d="M21 7a8 8 0 1 0 0 10"/></symbol>
-  <symbol id="i-plus10" viewBox="0 0 24 24"><path d="M13 17h8m0 0-3-3m3 3-3 3"/><path d="M3 7a8 8 0 1 1 0 10"/></symbol>
-  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4M4 20h16"/></symbol>
-  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></symbol>
-  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 14.1A9 9 0 0 1 9.9 3.5 9 9 0 1 0 20.5 14.1Z"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><rect class="fill" x="5" y="4" width="5" height="16" rx="1"/><rect class="fill" x="14" y="4" width="5" height="16" rx="1"/></symbol>
+<symbol id="i-stop" viewBox="0 0 24 24"><rect class="fill" x="4" y="4" width="16" height="16" rx="2"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path class="fill" d="M8 5v14l11-7z"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m3 0-1 15H6L5 6m5 4v7m4-7v7"/></symbol>
+<symbol id="i-eraser" viewBox="0 0 24 24"><path d="M8 20h13M2.9 14.5 13.4 4a2 2 0 0 1 2.8 0l4 4a2 2 0 0 1 0 2.8L11 20H7l-4.1-4.1a2 2 0 0 1 0-2.8Z"/><path d="m9 8 8 8"/></symbol>
+<symbol id="i-backspace" viewBox="0 0 24 24"><path d="m9 4-7 8 7 8h11a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H9Zm3 5 6 6m0-6-6 6"/></symbol>
+<symbol id="i-undo" viewBox="0 0 24 24"><path d="m9 14-5-5 5-5M4 9h10a6 6 0 1 1 0 12h-3"/></symbol>
+<symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5ZM15 9a5 5 0 0 1 0 6m3-9a9 9 0 0 1 0 12"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4M4 20h16"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 14.1A9 9 0 0 1 9.9 3.5 9 9 0 1 0 20.5 14.1Z"/></symbol>
 </defs></svg>
-
-<div class="shell">
-  <main class="app">
-    <header class="header">
-      <div class="brand">
-        <div class="brand-badge"><svg class="icon"><use href="#i-mic"></use></svg></div>
-        <div class="brand-text">
-          <h1>Sprache zu Text</h1>
-          <p>Deutsch sprechen. Text und Tonaufnahme bleiben sauber und übersichtlich.</p>
-        </div>
-      </div>
-      <div class="header-right">
-        <div class="status-pill" id="status">
-          <div class="dot"></div>
-          <div class="status-copy">
-            <strong id="statusText">Bereit</strong>
-            <span id="statusSub">Mikrofon starten, wenn Sie diktieren möchten.</span>
-          </div>
-        </div>
-        <div class="top-actions">
-          <button class="icon-btn" id="theme" aria-label="Design wechseln" title="Design wechseln">
-            <svg class="icon"><use id="themeUse" href="#i-sun"></use></svg>
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <section class="main-card" id="editor">
-      <div class="editor-top">
-        <div class="editor-title">Ihr Text</div>
-        <div class="editor-actions">
-          <button class="chip" id="read"><svg class="icon"><use href="#i-volume"></use></svg><span id="readLabel">Text vorlesen</span></button>
-          <button class="chip small" id="smaller" title="Schrift verkleinern">A−</button>
-          <button class="chip small" id="bigger" title="Schrift vergrößern">A+</button>
-        </div>
-      </div>
-      <div class="editor-area">
-        <textarea id="result" placeholder="Sprechen Sie auf Deutsch. Der Text erscheint hier …" spellcheck="true" autocapitalize="sentences" lang="de"></textarea>
-      </div>
-      <div class="editor-bottom">
-        <div class="stats" id="stats">0 Wörter · 0 Zeichen</div>
-      </div>
-    </section>
-
-    <!-- Eine einzige Bedienleiste auf allen Geräten; klare vollständige Beschriftungen bleiben für Screenreader erhalten. -->
-    <nav class="command-row" aria-label="Diktat und Textbearbeitung">
-      <button class="command-btn command-start" id="start" aria-label="Starten" title="Aufnahme starten oder fortsetzen">
-        <svg class="icon"><use href="#i-mic"></use></svg><span class="label-long" id="startLabel">Starten</span><span class="label-short" id="startShort">Start</span>
-      </button>
-      <button class="command-btn command-pause" id="pauseBtn" aria-label="Pause" title="Aufnahme pausieren">
-        <svg class="icon fill"><use href="#i-pause"></use></svg><span>Pause</span>
-      </button>
-      <button class="command-btn command-stop" id="stopBtn" aria-label="Stoppen" title="Aufnahme beenden und Tondatei erstellen">
-        <svg class="icon fill"><use href="#i-stop"></use></svg><span class="label-long">Stoppen</span><span class="label-short">Stopp</span>
-      </button>
-      <button class="command-btn" id="copyBtn" aria-label="Kopieren" title="Gesamten Text kopieren">
-        <svg class="icon"><use href="#i-copy"></use></svg><span class="label-long">Kopieren</span><span class="label-short">Kopie</span>
-      </button>
-      <button class="command-btn" id="deleteWord" aria-label="1 Wort löschen" title="Letztes Wort löschen">
-        <svg class="icon"><use href="#i-backspace"></use></svg><span class="label-long">1 Wort löschen</span><span class="label-short">1 Wort</span>
-      </button>
-      <button class="command-btn" id="undo" aria-label="Wiederherstellen" title="Letzte Änderung wiederherstellen">
-        <svg class="icon"><use href="#i-undo"></use></svg><span class="label-long">Wiederherstellen</span><span class="label-short">Zurück</span>
-      </button>
-      <button class="command-btn command-delete" id="clear" aria-label="Alles löschen" title="Gesamten Text löschen">
-        <svg class="icon"><use href="#i-trash"></use></svg><span class="label-long">Alles löschen</span><span class="label-short">Löschen</span>
-      </button>
-    </nav>
-
-    <section class="audio-card">
-      <div class="audio-head">
-        <div class="audio-title">Tonaufnahme</div>
-        <div class="audio-main-controls">
-          <button class="mini-btn" id="back" title="10 Sekunden zurück">−10s</button>
-          <button class="mini-btn play" id="play" title="Wiedergabe"><svg class="icon fill"><use id="playIconUse" href="#i-play"></use></svg></button>
-          <button class="mini-btn" id="forward" title="10 Sekunden vor">+10s</button>
-        </div>
-        <div class="time" id="time">00:00 / 00:00</div>
-        <div class="audio-side">
-          <button class="plain-btn" id="download" title="Speichern"><svg class="icon"><use href="#i-download"></use></svg></button>
-          <button class="plain-btn delete" id="remove" title="Löschen"><svg class="icon"><use href="#i-trash"></use></svg></button>
-        </div>
-      </div>
-      <input id="seek" class="seek" type="range" min="0" max="1000" value="0">
-      <div class="audio-note" id="audioNote">Noch keine Tonaufnahme</div>
-      <audio id="audio" preload="metadata"></audio>
-    </section>
-  </main>
-</div>
-
-<div class="toast" id="toast"></div>
-
+<div class="shell"><main class="app">
+<header class="header">
+ <h1>Sprache zu Text</h1>
+ <div class="header-right">
+  <div class="status-pill" id="status" role="status" aria-live="polite"><span class="dot"></span><strong id="statusText">Bereit</strong><span class="sr-only" id="statusSub"></span></div>
+  <button class="icon-btn" id="theme" type="button" aria-label="Design wechseln" title="Hell / Dunkel"><svg class="icon"><use id="themeUse" href="#i-sun"/></svg></button>
+ </div>
+</header>
+<section class="main-card" id="editor">
+ <div class="editor-top">
+  <div class="editor-left"><span class="editor-title">Ihr Text</span><span class="stats" id="stats">0 Wörter · 0 Zeichen</span></div>
+  <div class="editor-actions">
+   <button class="chip read" id="read" type="button" aria-label="Text vorlesen" title="Text vorlesen"><svg class="icon"><use href="#i-volume"/></svg><span class="read-label" id="readLabel">Vorlesen</span></button>
+   <button class="chip small" id="smaller" type="button" aria-label="Schrift verkleinern" title="Schrift verkleinern">A−</button>
+   <button class="chip small" id="bigger" type="button" aria-label="Schrift vergrößern" title="Schrift vergrößern">A+</button>
+  </div>
+ </div>
+ <div class="editor-area"><textarea id="result" aria-label="Erkannter deutscher Text" lang="de" spellcheck="true" autocapitalize="sentences" placeholder="Sprechen Sie auf Deutsch …"></textarea></div>
+</section>
+<nav class="command-row" aria-label="Diktat und Textbearbeitung">
+ <button class="command-btn command-start" type="button" id="start" aria-label="Starten" title="Starten / Fortsetzen"><svg class="icon"><use href="#i-mic"/></svg><span id="startLabel" class="long-label">Starten</span><span id="startShort" class="short-label">Start</span></button>
+ <button class="command-btn command-pause" type="button" id="pauseBtn" aria-label="Pause" title="Aufnahme pausieren"><svg class="icon fill"><use href="#i-pause"/></svg><span class="long-label">Pause</span></button>
+ <button class="command-btn command-stop" type="button" id="stopBtn" aria-label="Stoppen" title="Aufnahme beenden"><svg class="icon fill"><use href="#i-stop"/></svg><span class="long-label">Stoppen</span></button>
+ <button class="command-btn" type="button" id="copyBtn" aria-label="Kopieren" title="Text kopieren"><svg class="icon"><use href="#i-copy"/></svg><span class="long-label">Kopieren</span></button>
+ <button class="command-btn" type="button" id="deleteWord" aria-label="Letztes Wort löschen" title="Letztes Wort löschen"><svg class="icon"><use href="#i-backspace"/></svg><span class="long-label">1 Wort löschen</span></button>
+ <button class="command-btn" type="button" id="undo" aria-label="Wiederherstellen" title="Text wiederherstellen"><svg class="icon"><use href="#i-undo"/></svg><span class="long-label">Wiederherstellen</span></button>
+ <button class="command-btn command-delete" type="button" id="clear" aria-label="Gesamten Text löschen" title="Text leeren (nicht Audio löschen)"><svg class="icon"><use href="#i-eraser"/></svg><span class="long-label">Text leeren</span><span class="short-label">Text</span></button>
+</nav>
+<section class="audio-card" aria-label="Tonaufnahme und Wiedergabe">
+ <div class="audio-title"><span class="audio-title-long">Tonaufnahme</span><span class="audio-title-short">Ton</span></div>
+ <button class="audio-btn" type="button" id="back" aria-label="10 Sekunden zurück" title="10 Sekunden zurück">−10s</button>
+ <button class="audio-btn play" type="button" id="play" aria-label="Abspielen oder pausieren" title="Abspielen / Pausieren"><svg class="icon fill"><use id="playIconUse" href="#i-play"/></svg></button>
+ <button class="audio-btn" type="button" id="forward" aria-label="10 Sekunden vor" title="10 Sekunden vor">+10s</button>
+ <input id="seek" class="seek" type="range" aria-label="Tonaufnahme vorspulen oder zurückspulen" min="0" max="1000" value="0">
+ <span class="time" id="time">00:00 / 00:00</span>
+ <button class="audio-btn plain" type="button" id="download" aria-label="Tonaufnahme herunterladen" title="Tonaufnahme herunterladen"><svg class="icon"><use href="#i-download"/></svg></button>
+ <button class="audio-btn plain danger" type="button" id="remove" aria-label="Tonaufnahme löschen" title="NUR Tonaufnahme löschen"><svg class="icon"><use href="#i-trash"/></svg></button>
+ <div class="sr-only" role="status" id="audioNote">Noch keine Tonaufnahme</div><audio id="audio" preload="metadata"></audio>
+</section>
+</main></div>
+<div class="toast" id="toast" role="status"></div>
 <script>
 'use strict';
 const $ = id => document.getElementById(id);
