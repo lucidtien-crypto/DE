@@ -24,6 +24,8 @@ button,textarea,input{font:inherit}button{cursor:pointer;touch-action:manipulati
 .status-pill.paused .dot{background:var(--warn)}.status-pill.done .dot{background:var(--accent);animation:breathe 2.7s ease-in-out 3}.status-pill.error .dot{background:var(--danger)}
 .status-pill strong{font-size:12px;white-space:nowrap;font-weight:730}.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .icon-btn{height:39px;width:39px;border:1px solid var(--stroke);border-radius:11px;display:grid;place-items:center;color:var(--text);background:var(--panel)}
+.punctuation-btn{font-size:23px;line-height:1;font-weight:800;padding-bottom:5px;transition:background .16s,border-color .16s}
+.punctuation-btn:active{background:var(--accent-bg);border-color:var(--accent)}
 .icon{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}.fill{fill:currentColor;stroke:none}
 .main-card{min-height:0;display:flex;flex-direction:column;overflow:hidden;background:var(--panel);border:1px solid var(--stroke);border-radius:17px;box-shadow:var(--shadow)}
 .main-card.recording{border-color:var(--accent)}
@@ -49,6 +51,17 @@ button,textarea,input{font:inherit}button{cursor:pointer;touch-action:manipulati
 .seek::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--panel)}
 .time{font-size:11px;white-space:nowrap;color:var(--muted);font-variant-numeric:tabular-nums}
 .toast{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translate(-50%,8px);background:#294638;color:#fff;border-radius:10px;padding:9px 14px;font-size:12px;opacity:0;pointer-events:none;transition:.2s;z-index:20;max-width:90vw;text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}
+.audio-btn.mp3-busy{color:var(--accent);cursor:progress}
+.audio-btn.mp3-busy .icon{animation:mp3-loading .9s linear infinite}
+@keyframes mp3-loading{to{transform:rotate(360deg)}}
+/* Schmale Smartphones: Status als kleiner Punkt, damit Punkt und Komma sichtbar bleiben. */
+@media(max-width:460px){
+ .header-right{gap:4px}
+ .header-right .status-pill{min-width:24px;width:24px;height:33px;padding:0;border:0;background:transparent;box-shadow:none}
+ .header-right .icon-btn{height:33px;width:32px}
+}
+@media(max-width:350px){.header h1{font-size:18px}.header-right .icon-btn{width:30px;height:32px}}
+@media(prefers-reduced-motion:reduce){.audio-btn.mp3-busy .icon{animation:none}}
 @keyframes breathe{50%{opacity:.25;transform:scale(.9)}}
 /* Dezente Rückmeldung direkt am jeweiligen Button; keine Pop-up-Meldung beim Löschen. */
 .command-btn.quiet-ok,.audio-btn.quiet-ok{border-color:var(--accent)!important;background:var(--accent-bg)!important;box-shadow:0 0 0 1px var(--accent) inset;position:relative}
@@ -59,6 +72,20 @@ button,textarea,input{font:inherit}button{cursor:pointer;touch-action:manipulati
   .command-btn{height:47px;padding:0 2px;gap:4px;font-size:11px}
   .command-btn .long-label{display:none}
   .command-btn .short-label{display:inline}
+}
+/* Satzzeichen bleiben auch bei schmalen Mobilgeräten oben sichtbar. */
+@media(max-width:460px){
+ .header-right{gap:5px}
+ .status-pill{min-width:29px;width:29px;height:34px;padding:0;border:0;background:transparent}
+ .status-pill strong{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+ .icon-btn{width:34px;height:34px;border-radius:10px}
+ .punctuation-btn{font-size:21px}
+}
+@media(max-width:350px){
+ .header h1{font-size:18px}
+ .header{gap:5px}
+ .icon-btn{width:31px;height:32px}
+ .status-pill{width:22px;min-width:22px}
 }
 @media(max-width:670px){
   .shell{padding:9px 8px max(8px,env(safe-area-inset-bottom))}.app{gap:8px}
@@ -105,6 +132,8 @@ body.keyboard-open{overflow:auto;height:auto;min-height:100dvh}body.keyboard-ope
  <h1>Sprache zu Text</h1>
  <div class="header-right">
   <div class="status-pill" id="status" role="status" aria-live="polite"><span class="dot"></span><strong id="statusText">Bereit</strong><span class="sr-only" id="statusSub"></span></div>
+  <button class="icon-btn punctuation-btn" id="period" type="button" aria-label="Punkt am Textende" title="Punkt am Textende">.</button>
+  <button class="icon-btn punctuation-btn" id="comma" type="button" aria-label="Komma am Textende" title="Komma am Textende">,</button>
   <button class="icon-btn" id="theme" type="button" aria-label="Design wechseln" title="Hell / Dunkel"><svg class="icon"><use id="themeUse" href="#i-sun"/></svg></button>
  </div>
 </header>
@@ -135,7 +164,7 @@ body.keyboard-open{overflow:auto;height:auto;min-height:100dvh}body.keyboard-ope
  <button class="audio-btn" type="button" id="forward" aria-label="10 Sekunden vor" title="10 Sekunden vor">+10s</button>
  <input id="seek" class="seek" type="range" aria-label="Tonaufnahme vorspulen oder zurückspulen" min="0" max="1000" value="0">
  <span class="time" id="time">00:00 / 00:00</span>
- <button class="audio-btn plain" type="button" id="download" aria-label="Tonaufnahme herunterladen" title="Tonaufnahme herunterladen"><svg class="icon"><use href="#i-download"/></svg></button>
+ <button class="audio-btn plain" type="button" id="download" aria-label="Als MP3 herunterladen" title="Als MP3 herunterladen"><svg class="icon"><use href="#i-download"/></svg></button>
  <button class="audio-btn plain danger" type="button" id="remove" aria-label="Tonaufnahme löschen" title="NUR Tonaufnahme löschen"><svg class="icon"><use href="#i-trash"/></svg></button>
  <div class="sr-only" role="status" id="audioNote">Noch keine Tonaufnahme</div><audio id="audio" preload="metadata"></audio>
 </section>
@@ -148,7 +177,7 @@ const dom = {
   result:$('result'), editor:$('editor'), status:$('status'), statusText:$('statusText'), statusSub:$('statusSub'),
   start:$('start'), startLabel:$('startLabel'), pause:$('pauseBtn'), stop:$('stopBtn'),
   copy:$('copyBtn'), read:$('read'), readLabel:$('readLabel'), clear:$('clear'), del:$('deleteWord'), undo:$('undo'),
-  stats:$('stats'), theme:$('theme'), themeUse:$('themeUse'), small:$('smaller'), big:$('bigger'),
+  stats:$('stats'), theme:$('theme'), themeUse:$('themeUse'), period:$('period'), comma:$('comma'), small:$('smaller'), big:$('bigger'),
   audio:$('audio'), seek:$('seek'), play:$('play'), playIconUse:$('playIconUse'), back:$('back'), forward:$('forward'), time:$('time'),
   download:$('download'), remove:$('remove'), audioNote:$('audioNote'), toast:$('toast')
 };
@@ -350,6 +379,19 @@ function stopRead(){
 }
 function clearSessionForEdit(){ if(state.session){ state.session.invalid=true; try{state.session.engine.abort()}catch(_){}} }
 
+// Fügen Satzzeichen ans TEXTENDE ein, auch wenn ein altes Cursor-Position gespeichert ist.
+// Bereits angezeigte vorläufige Wörter behalten Vorrang, wenn gerade diktiert wird.
+function insertPunctuation(mark){
+  const before=dom.result.value.replace(/\s+$/u,'');
+  if(!before)return;
+  let core=before;
+  if(/[.,]$/u.test(core))core=core.slice(0,-1).replace(/\s+$/u,'');
+  const next=core+mark+' ';
+  if(dom.result.value===next)return;
+  snapshot();setText(next);clearSessionForEdit();
+}
+dom.period.onclick=()=>insertPunctuation('.');
+dom.comma.onclick=()=>insertPunctuation(',');
 dom.theme.onclick=()=>setTheme(!document.body.classList.contains('light'));
 dom.small.onclick=()=>{state.fontSize=Math.max(16,state.fontSize-2); document.documentElement.style.setProperty('--font-size',state.fontSize+'px'); save(KEY_SIZE,String(state.fontSize))};
 dom.big.onclick=()=>{state.fontSize=Math.min(36,state.fontSize+2); document.documentElement.style.setProperty('--font-size',state.fontSize+'px'); save(KEY_SIZE,String(state.fontSize))};
@@ -387,7 +429,123 @@ dom.audio.addEventListener('loadedmetadata',()=>{ updatePlayPosition(); }); dom.
 function seekTo(sec){ if(!state.audioURL) return; try{ dom.audio.currentTime=Math.max(0,Math.min(duration(),sec)); }catch(_){ notice('Dieses Audioformat kann nicht gespult werden.'); } updatePlayPosition(); }
 dom.seek.oninput=()=>seekTo(duration()*Number(dom.seek.value)/1000);
 dom.back.onclick=()=>seekTo((dom.audio.currentTime||0)-10); dom.forward.onclick=()=>seekTo((dom.audio.currentTime||0)+10);
-dom.download.onclick=()=>{ if(!state.audioURL) return; const ext=state.audioBlob?.type.includes('mp4')?'m4a':state.audioBlob?.type.includes('ogg')?'ogg':'webm'; const a=document.createElement('a'); a.href=state.audioURL; a.download='Deutsch_Aufnahme_'+new Date().toISOString().slice(0,19).replace(/[T:]/g,'-')+'.'+ext; document.body.append(a); a.click(); a.remove(); };
+// Der Browser nimmt je nach Gerät WebM oder M4A auf. Ein echtes MP3 wird erst
+// beim Herunterladen lokal umkodiert (niemals nur die Dateiendung umbenennen).
+// Die Bibliothek wird erst bei Bedarf geladen, damit Diktat und Aufnahme unverändert bleiben.
+let mp3LibraryPromise=null;
+let mp3DownloadBusy=false;
+function loadExternalScript(url){
+  return new Promise((resolve,reject)=>{
+    const script=document.createElement('script');
+    script.src=url; script.async=true; script.crossOrigin='anonymous';
+    script.onload=resolve;
+    script.onerror=()=>{script.remove();reject(new Error('Encoder nicht erreichbar'))};
+    document.head.append(script);
+  });
+}
+async function loadMp3Library(){
+  if(window.lamejs?.Mp3Encoder)return;
+  if(!mp3LibraryPromise){
+    mp3LibraryPromise=(async()=>{
+      // Feste Bibliotheksversion; zwei Quellen für den Fall einer Netzwerksperre.
+      const sources=[
+        'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js',
+        'https://unpkg.com/lamejs@1.2.1/lame.min.js'
+      ];
+      for(const src of sources){
+        try{await loadExternalScript(src);if(window.lamejs?.Mp3Encoder)return}
+        catch(error){console.info('MP3-Encoder:',error)}
+      }
+      throw new Error('MP3-Bibliothek nicht geladen. Bitte Internetverbindung prüfen.');
+    })().catch(error=>{mp3LibraryPromise=null;throw error});
+  }
+  await mp3LibraryPromise;
+}
+function downloadedMp3(blob){
+  const filename='Deutsch_Aufnahme_'+new Date().toISOString().slice(0,19).replace(/[T:]/g,'-')+'.mp3';
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename;
+  document.body.append(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+async function encodeMp3FromRecording(blob,onProgress){
+  // Ein natives MPEG/MP3 braucht keine erneute Umwandlung.
+  if(/^audio\/(?:mpeg|mp3)(?:;|$)/i.test(blob.type))return blob;
+  await loadMp3Library();
+  const AudioCtx=window.AudioContext||window.webkitAudioContext;
+  if(!AudioCtx)throw new Error('Audio-Dekodierung wird auf diesem Gerät nicht unterstützt.');
+  const ctx=new AudioCtx();
+  let audioBuffer;
+  try{
+    audioBuffer=await ctx.decodeAudioData(await blob.arrayBuffer());
+  }finally{
+    await ctx.close().catch(()=>{});
+  }
+  const outputRate=22050; // Sprache: mono, 64 kbit/s, gute Verständlichkeit
+  const ratio=audioBuffer.sampleRate/outputRate;
+  const frames=Math.floor(audioBuffer.duration*outputRate);
+  const left=audioBuffer.getChannelData(0);
+  const right=audioBuffer.numberOfChannels>1?audioBuffer.getChannelData(1):null;
+  const encoder=new window.lamejs.Mp3Encoder(1,outputRate,64);
+  const parts=[];
+  const blockSize=1152;
+  for(let start=0,block=0;start<frames;start+=blockSize,block++){
+    const len=Math.min(blockSize,frames-start);
+    const samples=new Int16Array(len);
+    for(let j=0;j<len;j++){
+      const position=(start+j)*ratio;
+      const index=Math.min(left.length-1,Math.floor(position));
+      const next=Math.min(left.length-1,index+1);
+      const fraction=position-index;
+      let sample=left[index]+(left[next]-left[index])*fraction;
+      if(right)sample=(sample+right[index]+(right[next]-right[index])*fraction)*.5;
+      sample=Math.max(-1,Math.min(1,sample));
+      samples[j]=sample<0?Math.round(sample*32768):Math.round(sample*32767);
+    }
+    const encoded=encoder.encodeBuffer(samples);
+    if(encoded.length)parts.push(new Uint8Array(encoded));
+    // Den Browser zwischen den Blöcken bedienbar lassen.
+    if(block%48===0){onProgress(Math.round(start/Math.max(1,frames)*100));await new Promise(resolve=>setTimeout(resolve,0))}
+  }
+  const rest=encoder.flush();if(rest.length)parts.push(new Uint8Array(rest));
+  const mp3=new Blob(parts,{type:'audio/mpeg'});
+  if(!mp3.size)throw new Error('Die MP3-Datei konnte nicht erstellt werden.');
+  return mp3;
+}
+dom.download.onclick=async()=>{
+  if(!state.audioBlob||mp3DownloadBusy)return;
+  const original=state.audioBlob; // Original auch bei Umwandlungsfehler behalten
+  mp3DownloadBusy=true;
+  dom.download.disabled=true;
+  dom.download.classList.add('mp3-busy');
+  const previousTitle=dom.download.title;
+  const previousLabel=dom.download.getAttribute('aria-label');
+  dom.download.title='MP3 wird erstellt …';
+  dom.download.setAttribute('aria-label','MP3 wird erstellt');
+  const previousStatus=dom.statusText.textContent;
+  const previousMode=state.phase;
+  try{
+    const mp3=await encodeMp3FromRecording(original,(pct)=>{
+      if(state.phase==='idle')status('MP3 '+pct+' %','done');
+    });
+    downloadedMp3(mp3);
+    if(state.phase==='idle')status('Bereit','done');
+    // Kleine Bestätigung direkt auf der Schaltfläche statt eines Pop-ups.
+    quietFeedback(dom.download,'MP3 gespeichert.');
+  }catch(error){
+    console.error('MP3-Konvertierung:',error);
+    if(state.phase==='idle')status('MP3-Fehler','error');
+    notice('MP3 nicht verfügbar: '+(error.message||'Bitte erneut versuchen.'));
+  }finally{
+    mp3DownloadBusy=false;
+    dom.download.classList.remove('mp3-busy');
+    dom.download.title=previousTitle;
+    dom.download.setAttribute('aria-label',previousLabel||'Als MP3 herunterladen');
+    refreshAudioButtons();
+    if(state.phase!==previousMode&&state.phase==='recording')status('Hört zu …','recording');
+  }
+};
 dom.remove.onclick=()=>{ if(!state.audioURL) return; clearAudio(); quietFeedback(dom.remove,'Tonaufnahme gelöscht.'); };
 
 function adjustViewport(){
