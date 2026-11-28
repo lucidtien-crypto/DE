@@ -4,642 +4,623 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f1815">
-<meta name="description" content="Deutsche Sprache-zu-Text-App mit Tonaufnahme.">
-<title>Sprache zu Text</title>
+<title>Sprache zu Text (Deutsch)</title>
 <style>
-:root{color-scheme:dark;--bg:#101916;--panel:#182720;--panel2:#1d3028;--text:#edf4ef;--muted:#a4b8ac;--stroke:#344a3d;--accent:#58c98e;--accent-bg:#244733;--warn:#e2b875;--danger:#ed98a0;--shadow:0 7px 28px #07130b35;--font-size:22px}
-body.light{color-scheme:light;--bg:#f6f8f5;--panel:#fff;--panel2:#f6faf6;--text:#172b24;--muted:#63786d;--stroke:#d8e2da;--accent:#157c55;--accent-bg:#e5f5eb;--warn:#a26e26;--danger:#be4755;--shadow:0 5px 22px #102d1a10}
+:root{color-scheme:dark;--bg:#101916;--panel:#182720;--panel2:#1d3028;--text:#edf4ef;--muted:#a4b8ac;--stroke:#344a3d;--accent:#58c98e;--accent-bg:#244733;--danger:#ed98a0;--shadow:0 6px 24px #07130b35;--font-size:22px}
+body.light{color-scheme:light;--bg:#f6f8f5;--panel:#fff;--panel2:#f6faf6;--text:#172b24;--muted:#63786d;--stroke:#d8e2da;--accent:#157c55;--accent-bg:#e5f5eb;--danger:#be4755;--shadow:0 4px 18px #102d1a10}
 *,*::before,*::after{box-sizing:border-box}
 html{height:100%;-webkit-text-size-adjust:100%}
-body{margin:0;height:100%;height:100dvh;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
-button,textarea,input{font:inherit}button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}button:disabled{opacity:.35;cursor:default}button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.shell{height:100%;height:100dvh;max-width:1260px;margin:auto;padding:clamp(9px,1.8vw,20px);padding-bottom:max(10px,env(safe-area-inset-bottom));min-width:0}
-.app{height:100%;min-height:0;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto auto;gap:clamp(8px,1.3vh,13px)}
-.header{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:43px}
-.header h1{font-size:clamp(23px,2.6vw,32px);line-height:1.1;margin:0;font-weight:780;letter-spacing:-.045em;white-space:nowrap}
-.header-right{display:flex;align-items:center;gap:9px}
-.status-pill{display:flex;align-items:center;gap:8px;border:1px solid var(--stroke);background:var(--panel);border-radius:11px;padding:9px 13px;min-width:104px;justify-content:center}
+body{margin:0;height:100%;height:100dvh;overflow:hidden;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+button,textarea,input{font:inherit}
+button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button:disabled{opacity:.35;cursor:default}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.shell{height:100%;height:100dvh;max-width:1100px;margin:auto;padding:clamp(9px,1.8vw,20px);padding-bottom:max(10px,env(safe-area-inset-bottom));min-width:0}
+.app{height:100%;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:clamp(8px,1.3vh,13px)}
+.header{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:42px}
+.header h1{font-size:clamp(20px,2.4vw,30px);line-height:1.1;margin:0;font-weight:760;letter-spacing:-.035em;white-space:nowrap}
+.header-right{display:flex;align-items:center;gap:8px}
+.status-pill{display:flex;align-items:center;gap:8px;border:1px solid var(--stroke);background:var(--panel);border-radius:11px;padding:8px 13px;min-width:108px;justify-content:center}
 .status-pill .dot{width:8px;height:8px;border-radius:50%;background:#869b8e;flex:none}
-.status-pill.recording .dot{background:var(--accent);animation:breathe 1.6s ease-in-out infinite}
-.status-pill.paused .dot{background:var(--warn)}.status-pill.done .dot{background:var(--accent);animation:breathe 2.7s ease-in-out 3}.status-pill.error .dot{background:var(--danger)}
-.status-pill strong{font-size:12px;white-space:nowrap;font-weight:730}.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-.icon-btn{height:39px;width:39px;border:1px solid var(--stroke);border-radius:11px;display:grid;place-items:center;color:var(--text);background:var(--panel)}
-.punctuation-btn{font-size:23px;line-height:1;font-weight:800;padding-bottom:5px;transition:background .16s,border-color .16s}
-.punctuation-btn:active{background:var(--accent-bg);border-color:var(--accent)}
-.icon{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}.fill{fill:currentColor;stroke:none}
-.main-card{min-height:0;display:flex;flex-direction:column;overflow:hidden;background:var(--panel);border:1px solid var(--stroke);border-radius:17px;box-shadow:var(--shadow)}
+.status-pill.recording .dot,.status-pill.done .dot{background:var(--accent)}
+.status-pill.error .dot{background:var(--danger)}
+.status-pill strong{font-size:12px;white-space:nowrap;font-weight:720}
+.icon-btn{height:38px;width:38px;border:1px solid var(--stroke);border-radius:11px;display:grid;place-items:center;color:var(--text);background:var(--panel)}
+.icon{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.fill{fill:currentColor;stroke:none}
+.main-card{min-height:0;display:flex;flex-direction:column;overflow:hidden;background:var(--panel);border:1px solid var(--stroke);border-radius:16px;box-shadow:var(--shadow)}
 .main-card.recording{border-color:var(--accent)}
-.editor-top{min-height:48px;padding:7px 12px 7px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--stroke)}
-.editor-left{display:flex;align-items:center;gap:10px;min-width:0}.editor-title{font-size:12px;font-weight:720;color:var(--muted);white-space:nowrap}.stats{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
-.editor-actions{display:flex;align-items:center;gap:7px}.chip{border:1px solid var(--stroke);color:var(--text);background:var(--panel2);height:33px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 10px;font-size:12px;font-weight:690;white-space:nowrap}
-.chip.small{width:34px;padding:0}.chip .icon{width:16px;height:16px}.chip.active{color:var(--accent);background:var(--accent-bg)}
-.editor-area{display:flex;min-height:0;flex:1}#result{flex:1;width:100%;min-height:0;resize:none;outline:0!important;border:0;background:transparent;color:var(--text);padding:18px 21px;font-size:var(--font-size);line-height:1.57;letter-spacing:-.014em;caret-color:var(--accent)}#result::placeholder{color:var(--muted);opacity:.77}
-.command-row{min-width:0;display:grid;grid-template-columns:1.07fr 1fr 1fr 1.12fr 1.36fr 1.45fr 1.32fr;gap:7px}
-.command-btn{height:49px;min-width:0;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 7px;border:1px solid var(--stroke);border-radius:11px;background:var(--panel);color:var(--text);font-size:clamp(10px,.97vw,13px);font-weight:710;white-space:nowrap;transition:background .15s,border-color .15s,transform .12s}
-.command-btn .icon{width:17px;height:17px}.command-btn.command-start{background:var(--accent);border-color:var(--accent);color:#0a2517}.command-btn.command-pause{color:var(--warn)}.command-btn.command-stop{color:var(--danger)}.command-btn.command-delete{color:var(--danger)}
-.command-btn:hover:not(:disabled),.icon-btn:hover:not(:disabled),.chip:hover:not(:disabled),.audio-btn:hover:not(:disabled){border-color:var(--accent)}.command-btn:active:not(:disabled){transform:scale(.98)}
-.command-btn .short-label{display:none}
-
-.audio-card{display:grid;grid-template-columns:auto auto auto auto minmax(54px,1fr) auto auto auto;align-items:center;gap:clamp(4px,.85vw,11px);background:var(--panel);border:1px solid var(--stroke);border-radius:14px;padding:9px 11px;box-shadow:var(--shadow);min-width:0}
-.audio-title{font-size:13px;font-weight:750;white-space:nowrap;margin-right:3px}.audio-title-short{display:none}
-.audio-btn{height:34px;min-width:34px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:1px solid var(--stroke);border-radius:9px;color:var(--text);background:var(--panel2);font-size:11px;font-weight:750;white-space:nowrap}
-.audio-btn.play{height:36px;width:36px;border-radius:50%;color:var(--accent);border-color:var(--accent)}.audio-btn .icon{height:15px;width:15px}
-.audio-btn.plain{border:0;background:transparent;min-width:31px;width:31px;padding:0}.audio-btn.danger{color:var(--danger)}
-.seek{display:block;min-width:0;width:100%;margin:0;appearance:none;-webkit-appearance:none;background:var(--stroke);border-radius:999px;height:5px;cursor:pointer;accent-color:var(--accent);touch-action:pan-y}
-.seek::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid var(--panel)}
-.seek:disabled{opacity:.4;cursor:default}
-.seek::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--panel)}
-.time{font-size:11px;white-space:nowrap;color:var(--muted);font-variant-numeric:tabular-nums}
-.toast{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translate(-50%,8px);background:#294638;color:#fff;border-radius:10px;padding:9px 14px;font-size:12px;opacity:0;pointer-events:none;transition:.2s;z-index:20;max-width:90vw;text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}
+.editor-top{min-height:44px;padding:6px 12px 6px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--stroke)}
+.editor-left{display:flex;align-items:center;gap:10px;min-width:0}
+.editor-title{font-size:12px;font-weight:720;color:var(--muted);white-space:nowrap}
+.stats{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.editor-actions{display:flex;align-items:center;gap:6px}
+.chip{border:1px solid var(--stroke);color:var(--text);background:var(--panel2);height:32px;width:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.editor-area{display:flex;min-height:0;flex:1}
+#result{flex:1;width:100%;min-height:0;resize:none;outline:0;border:0;background:transparent;color:var(--text);padding:16px 20px;font-size:var(--font-size);line-height:1.58;caret-color:var(--accent)}
+#result::placeholder{color:var(--muted);opacity:.75}
+.command-row{min-width:0;display:grid;grid-template-columns:1.4fr 1.1fr 1fr 1fr;gap:8px}
+.command-btn{height:50px;min-width:0;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 10px;border:1px solid var(--stroke);border-radius:11px;background:var(--panel);color:var(--text);font-size:13px;font-weight:720;white-space:nowrap}
+.command-btn .icon{width:17px;height:17px}
+.command-btn.command-start{background:var(--accent);border-color:var(--accent);color:#0a2517}
+.command-btn.command-stop,.command-btn.command-delete{color:var(--danger)}
+.command-btn:hover:not(:disabled),.icon-btn:hover:not(:disabled),.chip:hover:not(:disabled),.audio-btn:hover:not(:disabled){border-color:var(--accent)}
+.audio-card{display:grid;grid-template-columns:auto auto auto auto minmax(54px,1fr) auto auto auto;align-items:center;gap:clamp(4px,.85vw,10px);background:var(--panel);border:1px solid var(--stroke);border-radius:14px;padding:9px 11px;box-shadow:var(--shadow);min-width:0}
+.audio-title{font-size:13px;font-weight:750;white-space:nowrap;margin-right:3px}
+.audio-title-short{display:none}
+.audio-btn{height:34px;min-width:34px;display:flex;align-items:center;justify-content:center;padding:0 5px;border:1px solid var(--stroke);border-radius:9px;color:var(--text);background:var(--panel2);font-size:11px;font-weight:750;white-space:nowrap}
+.audio-btn.play{height:36px;width:36px;border-radius:50%;color:var(--accent);border-color:var(--accent)}
+.audio-btn .icon{height:15px;width:15px}
+.audio-btn.plain{border:0;background:transparent;min-width:31px;width:31px;padding:0}
+.audio-btn.danger{color:var(--danger)}
 .audio-btn.mp3-busy{color:var(--accent);cursor:progress}
 .audio-btn.mp3-busy .icon{animation:mp3-loading .9s linear infinite}
 @keyframes mp3-loading{to{transform:rotate(360deg)}}
-/* Schmale Smartphones: Status als kleiner Punkt, damit Punkt und Komma sichtbar bleiben. */
-@media(max-width:460px){
- .header-right{gap:4px}
- .header-right .status-pill{min-width:24px;width:24px;height:33px;padding:0;border:0;background:transparent;box-shadow:none}
- .header-right .icon-btn{height:33px;width:32px}
-}
-@media(max-width:350px){.header h1{font-size:18px}.header-right .icon-btn{width:30px;height:32px}}
-@media(prefers-reduced-motion:reduce){.audio-btn.mp3-busy .icon{animation:none}}
-@keyframes breathe{50%{opacity:.25;transform:scale(.9)}}
-/* Dezente Rückmeldung direkt am jeweiligen Button; keine Pop-up-Meldung beim Löschen. */
-.command-btn.quiet-ok,.audio-btn.quiet-ok{border-color:var(--accent)!important;background:var(--accent-bg)!important;box-shadow:0 0 0 1px var(--accent) inset;position:relative}
-.command-btn.quiet-ok::after,.audio-btn.quiet-ok::after{content:'✓';position:absolute;right:2px;top:1px;font-size:9px;color:var(--accent);font-weight:800;line-height:1;pointer-events:none}
-
-@media(max-width:900px){
-  .command-row{grid-template-columns:1.34fr repeat(6,1fr);gap:5px}
-  .command-btn{height:47px;padding:0 2px;gap:4px;font-size:11px}
-  .command-btn .long-label{display:none}
-  .command-btn .short-label{display:inline}
-}
-/* Satzzeichen bleiben auch bei schmalen Mobilgeräten oben sichtbar. */
-@media(max-width:460px){
- .header-right{gap:5px}
- .status-pill{min-width:29px;width:29px;height:34px;padding:0;border:0;background:transparent}
- .status-pill strong{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
- .icon-btn{width:34px;height:34px;border-radius:10px}
- .punctuation-btn{font-size:21px}
-}
-@media(max-width:350px){
- .header h1{font-size:18px}
- .header{gap:5px}
- .icon-btn{width:31px;height:32px}
- .status-pill{width:22px;min-width:22px}
-}
+.seek{display:block;min-width:0;width:100%;margin:0;appearance:none;-webkit-appearance:none;background:var(--stroke);border-radius:999px;height:5px;cursor:pointer;accent-color:var(--accent);touch-action:pan-y}
+.seek::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid var(--panel)}
+.seek::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--panel)}
+.seek:disabled{opacity:.4;cursor:default}
+.time{font-size:11px;white-space:nowrap;color:var(--muted);font-variant-numeric:tabular-nums}
+.toast{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translate(-50%,8px);background:#294638;color:#fff;border-radius:10px;padding:8px 14px;font-size:12px;opacity:0;pointer-events:none;transition:opacity .15s;z-index:20;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
 @media(max-width:670px){
   .shell{padding:9px 8px max(8px,env(safe-area-inset-bottom))}.app{gap:8px}
-  .header{min-height:38px}.header h1{font-size:21px}.status-pill{padding:8px 9px;min-width:84px}.icon-btn{height:35px;width:35px}
-  .editor-top{min-height:42px;padding:6px 9px}.editor-actions{gap:5px}.chip{height:30px;padding:0 8px}.chip.small{height:30px;width:30px}
+  .header h1{font-size:19px}.status-pill{padding:7px 9px;min-width:86px}.icon-btn{height:35px;width:35px}
   #result{padding:12px 13px;font-size:calc(var(--font-size) - 1px)}
-  .command-row{gap:4px}
-  .command-btn{height:44px;flex-direction:column;gap:2px;font-size:10px;border-radius:10px}
-  .command-btn .icon{width:18px;height:18px}
-  .command-btn .short-label{display:none}
-  .command-btn.command-start .short-label{display:inline;font-size:10px}
-  .command-btn.command-delete .short-label{display:inline;font-size:9px}
+  .command-row{grid-template-columns:1.25fr 1fr 1fr 1fr;gap:5px}
+  .command-btn{height:46px;font-size:12px;padding:0 5px;gap:4px}
   .audio-card{padding:8px 7px;gap:4px;grid-template-columns:auto auto auto auto minmax(32px,1fr) auto auto auto}
   .audio-title{font-size:11px;margin-right:0}.audio-title-long{display:none}.audio-title-short{display:inline}
-  .audio-btn{min-width:29px;height:31px;border-radius:8px;padding:0 2px;font-size:10px}
+  .audio-btn{min-width:29px;height:31px;border-radius:8px;padding:0 3px;font-size:10px}
   .audio-btn.play{height:33px;width:33px}.audio-btn.plain{min-width:27px;width:27px}
-  .time{font-size:9.5px;letter-spacing:-.055em}
+  .time{font-size:9.5px;letter-spacing:-.04em}
 }
-@media(max-width:350px){.shell{padding-left:6px;padding-right:6px}.header h1{font-size:19px}.command-row{gap:3px}.command-btn{height:42px}.command-btn .icon{width:16px;height:16px}.audio-card{gap:3px;padding:7px 6px}.audio-btn{min-width:27px}.audio-btn.play{width:31px;height:31px}.audio-btn.plain{width:25px;min-width:25px}.time{font-size:9px}.chip.read .read-label{display:none}}
-@media(max-height:650px){.app{gap:6px}.editor-top{min-height:36px}.command-btn{height:41px}.audio-card{padding-top:6px;padding-bottom:6px}}
-@media(max-height:440px){.header{min-height:32px}.command-btn{height:35px}.audio-card{padding-top:4px;padding-bottom:4px}.chip{height:28px}}
-body.keyboard-open{overflow:auto;height:auto;min-height:100dvh}body.keyboard-open .shell{height:auto;min-height:100dvh}body.keyboard-open .app{height:auto;min-height:100dvh}body.keyboard-open #result{min-height:36vh}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
-
-/* Drei kompakte Übungsmodi. Der Erkennungskern bleibt de-DE wie in der bewährten Vorlage. */
-.mode-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
-.mode-caption{font-size:12px;font-weight:720;color:var(--muted);white-space:nowrap}
-.mode-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:min(100%,420px);padding:3px;gap:4px;border:1px solid var(--stroke);border-radius:12px;background:var(--panel)}
-.mode-btn{height:34px;min-width:0;padding:0 9px;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--muted);font-size:12px;font-weight:740;white-space:nowrap;transition:background .16s,border-color .16s,color .16s}
-.mode-btn[aria-pressed="true"]{color:var(--accent);border-color:var(--stroke);background:var(--accent-bg)}
-.mode-btn:disabled{opacity:.6}
-@media(max-width:670px){.mode-caption{display:none}.mode-options{width:100%;}.mode-btn{height:32px}}
-@media(max-height:650px){.mode-row{gap:4px}.mode-options{padding:2px}.mode-btn{height:29px}}
+@media(max-width:420px){
+  .command-btn{flex-direction:column;height:48px;font-size:10px;gap:2px}
+}
+@media(prefers-reduced-motion:reduce){.audio-btn.mp3-busy .icon{animation:none}}
 </style>
 </head>
 <body>
 <svg width="0" height="0" aria-hidden="true" style="position:absolute;overflow:hidden"><defs>
 <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/></symbol>
-<symbol id="i-pause" viewBox="0 0 24 24"><rect class="fill" x="5" y="4" width="5" height="16" rx="1"/><rect class="fill" x="14" y="4" width="5" height="16" rx="1"/></symbol>
 <symbol id="i-stop" viewBox="0 0 24 24"><rect class="fill" x="4" y="4" width="16" height="16" rx="2"/></symbol>
 <symbol id="i-play" viewBox="0 0 24 24"><path class="fill" d="M8 5v14l11-7z"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><rect class="fill" x="5" y="4" width="5" height="16" rx="1"/><rect class="fill" x="14" y="4" width="5" height="16" rx="1"/></symbol>
 <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
-<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m3 0-1 15H6L5 6m5 4v7m4-7v7"/></symbol>
 <symbol id="i-eraser" viewBox="0 0 24 24"><path d="M8 20h13M2.9 14.5 13.4 4a2 2 0 0 1 2.8 0l4 4a2 2 0 0 1 0 2.8L11 20H7l-4.1-4.1a2 2 0 0 1 0-2.8Z"/><path d="m9 8 8 8"/></symbol>
-<symbol id="i-backspace" viewBox="0 0 24 24"><path d="m9 4-7 8 7 8h11a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H9Zm3 5 6 6m0-6-6 6"/></symbol>
-<symbol id="i-undo" viewBox="0 0 24 24"><path d="m9 14-5-5 5-5M4 9h10a6 6 0 1 1 0 12h-3"/></symbol>
-<symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5ZM15 9a5 5 0 0 1 0 6m3-9a9 9 0 0 1 0 12"/></symbol>
 <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4M4 20h16"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m3 0-1 15H6L5 6m5 4v7m4-7v7"/></symbol>
 <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></symbol>
 <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 14.1A9 9 0 0 1 9.9 3.5 9 9 0 1 0 20.5 14.1Z"/></symbol>
 </defs></svg>
+
 <div class="shell"><main class="app">
 <header class="header">
- <h1>Sprache zu Text</h1>
+ <h1>Sprache zu Text · DE</h1>
  <div class="header-right">
-  <div class="status-pill" id="status" role="status" aria-live="polite"><span class="dot"></span><strong id="statusText">Bereit</strong><span class="sr-only" id="statusSub"></span></div>
-  <button class="icon-btn punctuation-btn" id="period" type="button" aria-label="Punkt am Textende" title="Punkt am Textende">.</button>
-  <button class="icon-btn punctuation-btn" id="comma" type="button" aria-label="Komma am Textende" title="Komma am Textende">,</button>
+  <div class="status-pill" id="status" role="status" aria-live="polite"><span class="dot"></span><strong id="statusText">Bereit</strong></div>
   <button class="icon-btn" id="theme" type="button" aria-label="Design wechseln" title="Hell / Dunkel"><svg class="icon"><use id="themeUse" href="#i-sun"/></svg></button>
  </div>
 </header>
-<div class="mode-row" role="group" aria-label="Sprechmodus wählen">
- <span class="mode-caption">Übungsmodus</span>
- <div class="mode-options">
-  <button id="modeOne" class="mode-btn" type="button" data-mode="one" aria-pressed="false" title="Ein Wort sprechen: automatisch Punkt setzen und weiter zuhören">1 Wort</button>
-  <button id="modeShort" class="mode-btn" type="button" data-mode="short" aria-pressed="false" title="Kurzen Satz sprechen: automatisch Punkt setzen und weiter zuhören">Kurz · 2–6</button>
-  <button id="modeLong" class="mode-btn" type="button" data-mode="long" aria-pressed="true" title="Längere Texte diktieren, ohne automatische Punkte nach jedem Abschnitt">Lang · 7+</button>
- </div>
-</div>
+
 <section class="main-card" id="editor">
  <div class="editor-top">
-  <div class="editor-left"><span class="editor-title">Ihr Text</span><span class="stats" id="stats">0 Wörter · 0 Zeichen</span></div>
+  <div class="editor-left"><span class="editor-title">Deutsch (de-DE)</span><span class="stats" id="stats">0 Wörter · 0 Zeichen</span></div>
   <div class="editor-actions">
-   <button class="chip read" id="read" type="button" aria-label="Text vorlesen" title="Text vorlesen"><svg class="icon"><use href="#i-volume"/></svg><span class="read-label" id="readLabel">Vorlesen</span></button>
-   <button class="chip small" id="smaller" type="button" aria-label="Schrift verkleinern" title="Schrift verkleinern">A−</button>
-   <button class="chip small" id="bigger" type="button" aria-label="Schrift vergrößern" title="Schrift vergrößern">A+</button>
+   <button class="chip" id="smaller" type="button" aria-label="Schrift verkleinern" title="Schrift verkleinern">A−</button>
+   <button class="chip" id="bigger" type="button" aria-label="Schrift vergrößern" title="Schrift vergrößern">A+</button>
   </div>
  </div>
- <div class="editor-area"><textarea id="result" aria-label="Erkannter deutscher Text" lang="de" spellcheck="true" autocapitalize="sentences" placeholder="Sprechen Sie auf Deutsch …"></textarea></div>
+ <div class="editor-area">
+  <textarea id="result" aria-label="Erkannter deutscher Text" lang="de" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="Sprechen Sie auf Deutsch …"></textarea>
+ </div>
 </section>
-<nav class="command-row" aria-label="Diktat und Textbearbeitung">
- <button class="command-btn command-start" type="button" id="start" aria-label="Starten" title="Starten / Fortsetzen"><svg class="icon"><use href="#i-mic"/></svg><span id="startLabel" class="long-label">Starten</span><span id="startShort" class="short-label">Start</span></button>
- <button class="command-btn command-pause" type="button" id="pauseBtn" aria-label="Pause" title="Aufnahme pausieren"><svg class="icon fill"><use href="#i-pause"/></svg><span class="long-label">Pause</span></button>
- <button class="command-btn command-stop" type="button" id="stopBtn" aria-label="Stoppen" title="Aufnahme beenden"><svg class="icon fill"><use href="#i-stop"/></svg><span class="long-label">Stoppen</span></button>
- <button class="command-btn" type="button" id="copyBtn" aria-label="Kopieren" title="Text kopieren"><svg class="icon"><use href="#i-copy"/></svg><span class="long-label">Kopieren</span></button>
- <button class="command-btn" type="button" id="deleteWord" aria-label="Letztes Wort löschen" title="Letztes Wort löschen"><svg class="icon"><use href="#i-backspace"/></svg><span class="long-label">1 Wort löschen</span></button>
- <button class="command-btn" type="button" id="undo" aria-label="Wiederherstellen" title="Text wiederherstellen"><svg class="icon"><use href="#i-undo"/></svg><span class="long-label">Wiederherstellen</span></button>
- <button class="command-btn command-delete" type="button" id="clear" aria-label="Gesamten Text löschen" title="Text leeren (nicht Audio löschen)"><svg class="icon"><use href="#i-eraser"/></svg><span class="long-label">Text leeren</span><span class="short-label">Text</span></button>
+
+<nav class="command-row" aria-label="Steuerung">
+ <button class="command-btn command-start" type="button" id="start"><svg class="icon"><use href="#i-mic"/></svg><span>Starten</span></button>
+ <button class="command-btn command-stop" type="button" id="stopBtn"><svg class="icon fill"><use href="#i-stop"/></svg><span>Stoppen</span></button>
+ <button class="command-btn" type="button" id="copyBtn"><svg class="icon"><use href="#i-copy"/></svg><span>Kopieren</span></button>
+ <button class="command-btn command-delete" type="button" id="clear"><svg class="icon"><use href="#i-eraser"/></svg><span>Leeren</span></button>
 </nav>
-<section class="audio-card" aria-label="Tonaufnahme und Wiedergabe">
+
+<section class="audio-card" aria-label="Tonaufnahme">
  <div class="audio-title"><span class="audio-title-long">Tonaufnahme</span><span class="audio-title-short">Ton</span></div>
- <button class="audio-btn" type="button" id="back" aria-label="10 Sekunden zurück" title="10 Sekunden zurück">−10s</button>
- <button class="audio-btn play" type="button" id="play" aria-label="Abspielen oder pausieren" title="Abspielen / Pausieren"><svg class="icon fill"><use id="playIconUse" href="#i-play"/></svg></button>
- <button class="audio-btn" type="button" id="forward" aria-label="10 Sekunden vor" title="10 Sekunden vor">+10s</button>
- <input id="seek" class="seek" type="range" aria-label="Tonaufnahme vorspulen oder zurückspulen" min="0" max="1000" value="0">
+ <button class="audio-btn" type="button" id="back" aria-label="10 Sekunden zurück">−10s</button>
+ <button class="audio-btn play" type="button" id="play" aria-label="Abspielen oder pausieren"><svg class="icon fill"><use id="playIconUse" href="#i-play"/></svg></button>
+ <button class="audio-btn" type="button" id="forward" aria-label="10 Sekunden vor">+10s</button>
+ <input id="seek" class="seek" type="range" aria-label="Wiedergabeposition" min="0" max="1000" value="0">
  <span class="time" id="time">00:00 / 00:00</span>
- <button class="audio-btn plain" type="button" id="download" aria-label="Als MP3 herunterladen" title="Als MP3 herunterladen"><svg class="icon"><use href="#i-download"/></svg></button>
- <button class="audio-btn plain danger" type="button" id="remove" aria-label="Tonaufnahme löschen" title="NUR Tonaufnahme löschen"><svg class="icon"><use href="#i-trash"/></svg></button>
- <div class="sr-only" role="status" id="audioNote">Noch keine Tonaufnahme</div><audio id="audio" preload="metadata"></audio>
+ <button class="audio-btn plain" type="button" id="download" aria-label="Als MP3 herunterladen" title="Als MP3 speichern"><svg class="icon"><use href="#i-download"/></svg></button>
+ <button class="audio-btn plain danger" type="button" id="remove" aria-label="Tonaufnahme löschen" title="Tonaufnahme löschen"><svg class="icon"><use href="#i-trash"/></svg></button>
+ <audio id="audio" preload="metadata"></audio>
 </section>
 </main></div>
-<div class="toast" id="toast" role="status"></div><span id="editFeedback" class="sr-only" role="status" aria-live="polite"></span>
+
+<div class="toast" id="toast" role="status"></div>
+
 <script>
 'use strict';
 const $ = id => document.getElementById(id);
 const dom = {
-  result:$('result'), editor:$('editor'), status:$('status'), statusText:$('statusText'), statusSub:$('statusSub'),
-  start:$('start'), startLabel:$('startLabel'), pause:$('pauseBtn'), stop:$('stopBtn'),
-  copy:$('copyBtn'), read:$('read'), readLabel:$('readLabel'), clear:$('clear'), del:$('deleteWord'), undo:$('undo'),
-  stats:$('stats'), theme:$('theme'), themeUse:$('themeUse'), period:$('period'), comma:$('comma'), small:$('smaller'), big:$('bigger'),
-  audio:$('audio'), seek:$('seek'), play:$('play'), playIconUse:$('playIconUse'), back:$('back'), forward:$('forward'), time:$('time'),
-  download:$('download'), remove:$('remove'), audioNote:$('audioNote'), toast:$('toast')
+  result:$('result'), editor:$('editor'), status:$('status'), statusText:$('statusText'),
+  start:$('start'), stop:$('stopBtn'), copy:$('copyBtn'), clear:$('clear'),
+  stats:$('stats'), theme:$('theme'), themeUse:$('themeUse'), small:$('smaller'), big:$('bigger'),
+  audio:$('audio'), seek:$('seek'), play:$('play'), playIconUse:$('playIconUse'),
+  back:$('back'), forward:$('forward'), time:$('time'), download:$('download'), remove:$('remove'), toast:$('toast')
 };
+
 const SpeechEngine = window.SpeechRecognition || window.webkitSpeechRecognition;
 const KEY_TEXT = 'speech2text_de_text';
 const KEY_THEME = 'speech2text_de_theme';
 const KEY_SIZE = 'speech2text_de_size';
-const KEY_MODE = 'speech2text_de_mode';
+
 const state = {
-  committed:'', phase:'idle', session:null, restart:null, undo:[], run:0,
-  media:null, stream:null, chunks:[], audioBlob:null, audioURL:'', audioSeconds:0, recordedMs:0, resumedAt:0,
-  fontSize:22, speaking:false, utterance:null, toastTimer:0, mode:'long'
+  text:'', recording:false, session:null, restart:null, retries:0, run:0,
+  media:null, stream:null, audioBlob:null, audioURL:'', audioSeconds:0, startedAt:0,
+  fontSize:22, toastTimer:0, mp3Busy:false
 };
-function saved(key){try{return localStorage.getItem(key)}catch(_){return null}}
-function save(key,val){try{localStorage.setItem(key,val)}catch(_){}}
-function notice(msg){dom.toast.textContent=msg;dom.toast.classList.add('show');clearTimeout(state.toastTimer);state.toastTimer=setTimeout(()=>dom.toast.classList.remove('show'),2300)}
-const quietTimers = new WeakMap();
-function quietFeedback(button,message){
-  clearTimeout(quietTimers.get(button));
-  button.classList.remove('quiet-ok');
-  void button.offsetWidth; // Neustart der kurzen Rückmeldung bei wiederholtem Tippen.
-  button.classList.add('quiet-ok');
-  $('editFeedback').textContent=message;
-  quietTimers.set(button,setTimeout(()=>button.classList.remove('quiet-ok'),950));
+
+// Eine einzige, strikt deutsche Erkennungs-Instanz
+let recognition = null;
+if (SpeechEngine) {
+  recognition = new SpeechEngine();
+  recognition.lang = 'de-DE';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
 }
-function setTheme(light){document.body.classList.toggle('light', light);dom.themeUse.setAttribute('href', light ? '#i-moon' : '#i-sun');save(KEY_THEME, light ? '1' : '0')}
-function status(text, mode='idle', sub=''){
+
+function saved(k){try{return localStorage.getItem(k)}catch(_){return null}}
+function save(k,v){try{localStorage.setItem(k,v)}catch(_){}}
+function notice(msg){
+  dom.toast.textContent = msg;
+  dom.toast.classList.add('show');
+  clearTimeout(state.toastTimer);
+  state.toastTimer = setTimeout(() => dom.toast.classList.remove('show'), 2200);
+}
+function setTheme(light){
+  document.body.classList.toggle('light', light);
+  dom.themeUse.setAttribute('href', light ? '#i-moon' : '#i-sun');
+  save(KEY_THEME, light ? '1' : '0');
+}
+function status(text, mode='idle'){
   dom.statusText.textContent = text;
-  dom.statusSub.textContent = sub || (mode==='recording' ? 'Sprache wird laufend erkannt.' : mode==='paused' ? 'Aufnahme ist pausiert.' : mode==='done' ? 'Text bleibt gespeichert.' : mode==='error' ? 'Bitte Mikrofon und Verbindung prüfen.' : 'Mikrofon starten, wenn Sie diktieren möchten.');
-  dom.status.className = 'status-pill' + (mode && mode!=='idle' ? ' ' + mode : '');
+  dom.status.className = 'status-pill' + (mode !== 'idle' ? ' ' + mode : '');
 }
-function count(){const t=dom.result.value;const words=t.trim()?t.trim().split(/\s+/u).length:0;dom.stats.textContent=`${words} ${words===1?'Wort':'Wörter'} · ${t.length} Zeichen`}
-// Wortzusammenführung und Satzanfänge entsprechen der getesteten Diktat-Vorlage index(5).html.
-function capitalizeSentences(text){
-  return text.replace(/(^|[.!?]\s*|\n\s*)([a-zäöüß])/gmu,(all,prefix,letter)=>prefix+letter.toUpperCase());
+function count(){
+  const t = dom.result.value;
+  const words = t.trim() ? t.trim().split(/\s+/u).length : 0;
+  dom.stats.textContent = `${words} ${words === 1 ? 'Wort' : 'Wörter'} · ${t.length} Zeichen`;
 }
-function appendSpeech(original,addition){
-  const more=(addition||'').trim(); if(!more)return original;
-  if(!original)return more;
-  return original + (/\s$/u.test(original)?'':' ') + more;
+function capitalizeGerman(text){
+  if (!text) return '';
+  return text.replace(/(^|[.!?]\s*|\n\s*)([a-zäöü])/gmu, (_, p, c) => p + c.toUpperCase());
 }
-function setText(text){state.committed=capitalizeSentences(text);dom.result.value=state.committed;save(KEY_TEXT,state.committed);count()}
-function snapshot(){state.undo.push(dom.result.value);if(state.undo.length>40)state.undo.shift();dom.undo.disabled = !state.undo.length}
-function assemble(base,pieces){let text=base;for(const piece of pieces)text=appendSpeech(text,piece);return capitalizeSentences(text)}
-// Bei Ein-Wort-Übungen wird nur das ERSTE erkannte Wort übernommen.
-// Eine Web-Speech-Sitzung kann keine zuverlässige Wortzahl erzwingen:
-// Erst das erkannte Ergebnis wird auf ein Wort begrenzt.
-function unitForMode(text, mode){
-  const spoken=(text||'').trim();
-  if(mode==='one'){
-    const first=spoken.match(/[\p{L}\p{N}]+(?:[-'’][\p{L}\p{N}]+)*/u);
-    return first?first[0]:'';
-  }
-  return spoken;
+function appendSpeech(base, add){
+  const more = (add || '').trim();
+  if (!more) return base;
+  if (!base) return more;
+  return base + (/\s$/u.test(base) ? '' : ' ') + more;
 }
-function dottedUnit(text, mode){
-  const unit=unitForMode(text,mode).replace(/[\s.,!?;:]+$/u,'').trim();
-  return unit?unit+'.':'';
+function commitText(text){
+  state.text = capitalizeGerman(text);
+  dom.result.value = state.text;
+  save(KEY_TEXT, state.text);
+  count();
 }
-function snapshotResult(session,withInterim=false){
-  const pieces=[...session.final];
-  if(withInterim&&session.interim)pieces.push(session.interim);
-  const heard=pieces.join(' ').trim();
-  if(session.mode==='long')return assemble(session.base,pieces);
-  // Während des Sprechens keine Satzzeichen aus unbestätigten Wörtern erzeugen.
-  return assemble(session.base,[unitForMode(heard,session.mode)]);
-}
-function selectMode(mode){
-  if(!['one','short','long'].includes(mode) || state.phase==='recording' || state.phase==='finishing')return;
-  state.mode=mode;
-  save(KEY_MODE,mode);
-  document.querySelectorAll('.mode-btn').forEach(button=>{
-    button.setAttribute('aria-pressed', String(button.dataset.mode===mode));
-  });
-}
-function recognizedWords(text){
-  return (text.match(/[\p{L}\p{N}]+(?:['’\-][\p{L}\p{N}]+)*/gu)||[]).length;
-}
-document.querySelectorAll('.mode-btn').forEach(button=>{
-  button.addEventListener('click',()=>selectMode(button.dataset.mode));
-});
 function drawButtons(){
-  document.querySelectorAll('.mode-btn').forEach(button=>{
-    button.disabled=state.phase==='recording'||state.phase==='finishing';
-  });
-  const recording = state.phase==='recording';
-  const paused = state.phase==='paused';
-  dom.start.disabled = recording;
-  dom.pause.disabled = !recording;
-  dom.stop.disabled = !recording && !paused;
-  dom.startLabel.textContent = paused ? 'Fortsetzen' : 'Starten';
-  $('startShort').textContent = paused ? 'Weiter' : 'Start';
-  dom.start.setAttribute('aria-label', paused ? 'Fortsetzen' : 'Starten');
+  dom.start.disabled = state.recording || state.mp3Busy || !recognition;
+  dom.stop.disabled = !state.recording;
 }
-function stopTracks(stream){if(stream) for(const tr of stream.getTracks()) tr.stop()}
-function clearRecorder(){if(state.media && state.media.state!=='inactive'){try{state.media.stop()}catch(_){}} stopTracks(state.stream); state.media=null; state.stream=null; state.resumedAt=0;}
-function clearAudio(){
-  if(state.audioURL) URL.revokeObjectURL(state.audioURL);
-  state.audioBlob=null; state.audioURL=''; state.audioSeconds=0; state.recordedMs=0; state.resumedAt=0;
-  dom.audio.removeAttribute('src'); dom.audio.load(); dom.audioNote.textContent='Noch keine Tonaufnahme';
-  refreshAudioButtons(); updatePlayPosition();
+
+// --- 1. DEUTSCHE SPRACHERKENNUNG (HÖCHSTE PRIORITÄT) ---
+function scheduleNext(delay){
+  clearTimeout(state.restart);
+  if (!state.recording) return;
+  state.restart = setTimeout(() => {
+    state.restart = null;
+    if (state.recording && !state.session) launchRecognition();
+  }, delay);
 }
-function refreshAudioButtons(){const ready=!!state.audioURL;[dom.seek,dom.play,dom.back,dom.forward,dom.download,dom.remove].forEach(el=>el.disabled=!ready);if(!ready){dom.playIconUse.setAttribute('href','#i-play')}}
-function formatTime(s){s=Number.isFinite(s)?Math.max(0,Math.floor(s)):0;return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
-function duration(){const d=dom.audio.duration;return Number.isFinite(d)&&d>0?d:state.audioSeconds}
-function updatePlayPosition(){const current=Number.isFinite(dom.audio.currentTime)?dom.audio.currentTime:0;const total=duration();dom.time.textContent=`${formatTime(current)} / ${formatTime(total)}`;dom.seek.value=total>0?String(Math.round(Math.max(0,Math.min(1,current/total))*1000)):'0'}
-function finalizeBlob(media,parts,ms){
-  if(!parts.length) return;
-  const blob = new Blob(parts,{type:media.mimeType||parts[0].type||'audio/webm'});
-  if(!blob.size) return;
-  if(state.audioURL) URL.revokeObjectURL(state.audioURL);
-  state.audioBlob=blob; state.audioSeconds=ms/1000; state.audioURL=URL.createObjectURL(blob);
-  dom.audio.src=state.audioURL; dom.audio.load(); dom.audioNote.textContent='Aufnahme bereit';
-  refreshAudioButtons(); updatePlayPosition();
-}
-async function openMicAndStart(run){
-  let stream=null;
-  try{
-    if(!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder==='undefined') throw new Error('MediaRecorder unavailable');
-    stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});
-    if(run!==state.run || !['recording','paused'].includes(state.phase)){stopTracks(stream);return}
-    const types=['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus'];
-    const type=types.find(x=>MediaRecorder.isTypeSupported?.(x));
-    const media = new MediaRecorder(stream, type ? {mimeType:type} : undefined);
-    state.media=media; state.stream=stream;
-    const parts=[]; state.chunks=parts;
-    media.ondataavailable=e=>{if(e.data?.size) parts.push(e.data)};
-    media.onerror=()=>{dom.audioNote.textContent='Audioaufnahme fehlgeschlagen'};
-    media.onstop=()=>{
-      stopTracks(stream);
-      if(state.stream===stream) state.stream=null;
-      if(state.media===media) state.media=null;
-      if(run!==state.run) return;
-      const total=state.recordedMs + (state.resumedAt ? performance.now()-state.resumedAt : 0);
-      state.recordedMs=total; state.resumedAt=0;
-      finalizeBlob(media,parts,total);
-    };
-    media.start(1000);
-    state.resumedAt=performance.now();
-    dom.audioNote.textContent='Aufnahme läuft …';
-    if(state.phase==='paused'){
-      media.pause();
-      state.resumedAt=0;
-      dom.audioNote.textContent='Aufnahme pausiert';
-    }
-  }catch(error){
-    stopTracks(stream);
-    if(run!==state.run) return;
-    dom.audioNote.textContent='Nur Texterkennung verfügbar';
-    console.info('Tonaufnahme nicht verfügbar:',error);
-  }finally{
-    if(run===state.run && state.phase==='recording' && !state.session) launchRecognition();
-  }
-}
-function scheduleNext(delay=320){clearTimeout(state.restart); if(state.phase!=='recording') return; state.restart=setTimeout(()=>{state.restart=null; if(state.phase==='recording' && !state.session) launchRecognition()}, delay)}
+
 function launchRecognition(){
-  if(state.phase!=='recording' || state.session || !SpeechEngine) return;
-  const engine = new SpeechEngine();
-  engine.lang='de-DE'; engine.continuous=false; engine.interimResults=true; engine.maxAlternatives=1;
-  const session={engine,base:state.committed,final:[],interim:'',invalid:false,error:'',mode:state.mode,finishing:false};
-  state.session=session;
-  engine.onstart=()=>{ if(state.session!==session) return; if(state.phase!=='recording'){try{engine.stop()}catch(_){}} else {status('Hört zu …','recording'); dom.editor.classList.add('recording');} };
-  engine.onresult=e=>{
-    if(state.session!==session || session.invalid) return;
-    let final='', interim='';
-    // Wie in der bewährten deutschen Version werden alle Ergebnisse erneut aufgebaut.
-    for(let i=0;i<e.results.length;i++){
-      const text=e.results[i]?.[0]?.transcript||'';
-      if(e.results[i].isFinal) final=appendSpeech(final,text);
-      else interim=appendSpeech(interim,text);
+  if (!state.recording || state.session || !recognition) return;
+  clearTimeout(state.restart);
+  state.restart = null;
+  state.session = { base:state.text, final:'', interim:'', invalid:false, error:'' };
+  try {
+    recognition.lang = 'de-DE';
+    recognition.start();
+  } catch (_) {
+    state.session = null;
+    if (state.recording && state.retries < 5) {
+      state.retries++;
+      scheduleNext(60);
+    } else if (state.recording) {
+      stopRecord(true);
+      status('Mikrofon prüfen', 'error');
+      notice('Spracherkennung konnte nicht starten.');
     }
-    session.final=final ? [final] : []; session.interim=interim;
-    dom.result.value=snapshotResult(session,true); count(); dom.result.scrollTop=dom.result.scrollHeight;
-    // Bei 1 Wort / Kurz den ersten fertigen Abschnitt abschließen,
-    // danach automatisch eine neue Hör-Sitzung beginnen (keine Pause).
-    if(session.mode!=='long' && final.trim() && !session.finishing){
-      session.finishing=true;
-      try{engine.stop()}catch(_){ /* onend kommt ggf. ohnehin */ }
-    }
-  };
-  engine.onerror=e=>{
-    if(state.session!==session) return;
-    session.error=e.error||'unknown';
-    if(['not-allowed','service-not-allowed','audio-capture','network','language-not-supported'].includes(session.error)){
-      if(state.phase==='recording') pauseRecord();
-      status(session.error==='network'?'Netzwerkfehler':'Mikrofon prüfen','error');
-    }
-  };
-  engine.onend=()=>{
-    if(state.session!==session) return;
-    state.session=null;
-    if(!session.invalid){
-      const final=session.final.join(' ').trim();
-      // Nur falls kein endgültiges Ergebnis vorliegt, bei Stopp/Pause die
-      // bereits sichtbaren Wörter übernehmen; sonst nicht doppelt anhängen.
-      const fallback=(!final && state.phase!=='recording' && session.error!=='no-speech')
-        ? session.interim.trim() : '';
-      const spoken=final||fallback;
-      if(session.mode==='long'){
-        const pieces=final?session.final:(fallback?[fallback]:[]);
-        setText(assemble(session.base,pieces));
-      }else if(spoken){
-        setText(assemble(session.base,[dottedUnit(spoken,session.mode)]));
-      }else{
-        setText(session.base);
-      }
-    }
-    dom.editor.classList.remove('recording');
-    if(state.phase==='recording'){
-      status('Hört zu …','recording');
-      scheduleNext(session.error==='no-speech'?560:280);
-    }else if(state.phase==='paused')status('Pausiert','paused');
-  };
-  try{engine.start()}catch(error){state.session=null; dom.editor.classList.remove('recording'); status('Mikrofon prüfen','error'); notice('Spracherkennung konnte nicht starten.'); console.info(error)}
-}
-async function startRecord(){
-  if(!SpeechEngine){notice('Deutsche Spracherkennung nicht unterstützt.'); return}
-  if(state.phase==='recording' || state.phase==='finishing') return;
-  stopRead();
-  if(state.phase==='paused'){
-    state.phase='recording';
-    if(state.media?.state==='paused'){
-      try{ state.media.resume(); state.resumedAt=performance.now(); dom.audioNote.textContent='Aufnahme läuft …'; }
-      catch(_){ dom.audioNote.textContent='Audio kann nicht fortgesetzt werden'; }
-    }
-    drawButtons(); status('Hört zu …','recording'); if(!state.session) launchRecognition(); return;
   }
-  // Kein Browser-Popup: Ein neuer Durchlauf ersetzt die vorherige Tonaufnahme.
-  // Wer sie behalten möchte, kann vorher über das Download-Symbol speichern.
-  clearAudio(); state.run++; const run=state.run; state.phase='recording'; state.recordedMs=0; state.resumedAt=0;
-  drawButtons(); status('Mikrofon startet …','recording');
-  await openMicAndStart(run);
 }
-function pauseRecord(){
-  if(state.phase!=='recording') return;
-  state.phase='paused'; clearTimeout(state.restart);
-  if(state.media?.state==='recording'){
-    if(state.resumedAt){ state.recordedMs += performance.now()-state.resumedAt; state.resumedAt=0; }
-    try{ state.media.pause(); }catch(_){ }
+
+if (recognition) {
+  recognition.onstart = () => {
+    recognition.lang = 'de-DE';
+    state.retries = 0;
+    if (!state.recording) {
+      try { recognition.stop(); } catch (_) {}
+      return;
+    }
+    status('Hört zu …', 'recording');
+    dom.editor.classList.add('recording');
+  };
+
+  recognition.onresult = e => {
+    const s = state.session;
+    if (!s || s.invalid) return;
+    let final = '', interim = '';
+    for (let i = 0; i < e.results.length; i++) {
+      const txt = e.results[i]?.[0]?.transcript || '';
+      if (e.results[i].isFinal) final = appendSpeech(final, txt);
+      else interim = appendSpeech(interim, txt);
+    }
+    s.final = final;
+    s.interim = interim;
+    const spoken = appendSpeech(final, interim);
+    dom.result.value = capitalizeGerman(appendSpeech(s.base, spoken));
+    count();
+    dom.result.scrollTop = dom.result.scrollHeight;
+  };
+
+  recognition.onerror = e => {
+    const err = e.error || 'unknown';
+    if (state.session) state.session.error = err;
+    if (['not-allowed','service-not-allowed','audio-capture','network','language-not-supported'].includes(err)) {
+      stopRecord(true);
+      status(err === 'network' ? 'Netzwerkfehler' : 'Mikrofon prüfen', 'error');
+    }
+  };
+
+  recognition.onend = () => {
+    const s = state.session;
+    state.session = null;
+    if (s && !s.invalid) {
+      const spoken = appendSpeech(s.final, s.interim);
+      if (spoken) commitText(appendSpeech(s.base, spoken));
+    }
+    if (state.recording) {
+      if (s?.error === 'no-speech') scheduleNext(40);
+      else launchRecognition();
+    } else {
+      dom.editor.classList.remove('recording');
+    }
+  };
+}
+
+// --- 2. SAUBERE TONAUFNAHME (OHNE DSP-FILTER) ---
+function stopTracks(stream){
+  if (stream) for (const tr of stream.getTracks()) tr.stop();
+}
+function clearAudio(){
+  if (!dom.audio.paused) dom.audio.pause();
+  if (state.audioURL) URL.revokeObjectURL(state.audioURL);
+  state.audioBlob = null;
+  state.audioURL = '';
+  state.audioSeconds = 0;
+  dom.audio.removeAttribute('src');
+  dom.audio.load();
+  refreshAudioButtons();
+  updatePlayPosition();
+}
+function refreshAudioButtons(){
+  const ready = !!state.audioURL && !state.recording;
+  [dom.seek, dom.play, dom.back, dom.forward, dom.remove].forEach(el => el.disabled = !ready);
+  dom.download.disabled = !ready || state.mp3Busy;
+  if (!ready) dom.playIconUse.setAttribute('href', '#i-play');
+}
+function formatTime(s){
+  s = Number.isFinite(s) ? Math.max(0, Math.floor(s)) : 0;
+  return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+}
+function duration(){
+  const d = dom.audio.duration;
+  return Number.isFinite(d) && d > 0 ? d : state.audioSeconds;
+}
+function updatePlayPosition(){
+  const cur = Number.isFinite(dom.audio.currentTime) ? dom.audio.currentTime : 0;
+  const tot = duration();
+  dom.time.textContent = `${formatTime(cur)} / ${formatTime(tot)}`;
+  dom.seek.value = tot > 0 ? String(Math.round(Math.max(0, Math.min(1, cur / tot)) * 1000)) : '0';
+}
+async function getRawMicStream(){
+  try {
+    return await navigator.mediaDevices.getUserMedia({
+      audio:{ echoCancellation:false, noiseSuppression:false, autoGainControl:false },
+      video:false
+    });
+  } catch (_) {
+    return await navigator.mediaDevices.getUserMedia({ audio:true, video:false });
   }
-  if(state.session){ try{ state.session.engine.stop(); }catch(_){ } }
-  drawButtons(); status('Pausiert','paused');
-  if(state.media) dom.audioNote.textContent='Aufnahme pausiert';
+}
+async function startAudioRecorder(run){
+  let stream = null;
+  try {
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') return;
+    stream = await getRawMicStream();
+    if (run !== state.run || !state.recording) { stopTracks(stream); return; }
+    const types = ['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus'];
+    const type = types.find(t => MediaRecorder.isTypeSupported?.(t));
+    const media = new MediaRecorder(stream, type ? { mimeType:type } : undefined);
+    const parts = [];
+    state.media = media;
+    state.stream = stream;
+    media.ondataavailable = e => { if (e.data?.size) parts.push(e.data); };
+    media.onstop = () => {
+      stopTracks(stream);
+      if (state.stream === stream) state.stream = null;
+      if (state.media === media) state.media = null;
+      if (run !== state.run || !parts.length) return;
+      const blob = new Blob(parts, { type:media.mimeType || parts[0].type || 'audio/webm' });
+      if (!blob.size) return;
+      if (state.audioURL) URL.revokeObjectURL(state.audioURL);
+      state.audioBlob = blob;
+      state.audioSeconds = Math.max(0.1, (performance.now() - state.startedAt) / 1000);
+      state.audioURL = URL.createObjectURL(blob);
+      dom.audio.src = state.audioURL;
+      dom.audio.load();
+      refreshAudioButtons();
+      updatePlayPosition();
+    };
+    state.startedAt = performance.now();
+    media.start();
+  } catch (_) {
+    stopTracks(stream);
+  }
+}
+
+// --- STEUERUNG ---
+function startRecord(){
+  if (!recognition || state.recording || state.mp3Busy) return;
+  // Alte laufende/auslaufende Sitzung verwerfen, damit alter Text nicht nachgeschrieben wird
+  if (state.session) {
+    state.session.invalid = true;
+    try { recognition.abort(); } catch (_) {}
+  }
+  clearAudio();
+  // Textfeld bei jeder neuen Aufnahme nach Stoppen automatisch leeren
+  commitText('');
+  state.recording = true;
+  state.run++;
+  const run = state.run;
+  state.retries = 0;
+  drawButtons();
+  refreshAudioButtons();
+  status('Hört zu …', 'recording');
+  if (!state.session) launchRecognition();
+  startAudioRecorder(run);
+}
+
+function stopRecord(fromError = false){
+  if (!state.recording) return;
+  state.recording = false;
+  clearTimeout(state.restart);
+  state.restart = null;
+  if (state.session && recognition) {
+    try { recognition.stop(); } catch (_) {}
+  }
+  if (state.media && state.media.state !== 'inactive') {
+    try { state.media.stop(); } catch (_) {}
+  } else {
+    stopTracks(state.stream);
+    state.stream = null;
+    state.media = null;
+  }
+  drawButtons();
+  refreshAudioButtons();
   dom.editor.classList.remove('recording');
+  if (!fromError) status('Bereit', 'done');
 }
-function stopRecord(){
-  if(!['recording','paused'].includes(state.phase)) return;
-  state.phase='finishing'; clearTimeout(state.restart);
-  if(state.session){ try{ state.session.engine.stop(); }catch(_){ } }
-  if(state.media && state.media.state!=='inactive'){ try{ state.media.stop(); }catch(_){ } }
-  else { stopTracks(state.stream); state.stream=null; state.media=null; }
-  state.phase='idle'; drawButtons(); status('Bereit','done'); dom.editor.classList.remove('recording');
-  if(!state.media && !state.audioURL) dom.audioNote.textContent='Kein Ton verfügbar';
-}
-function stopRead(){
-  if('speechSynthesis' in window) window.speechSynthesis.cancel();
-  state.speaking=false; state.utterance=null; dom.read.classList.remove('active'); dom.readLabel.textContent='Text vorlesen';
-}
-function clearSessionForEdit(){ if(state.session){ state.session.invalid=true; try{state.session.engine.abort()}catch(_){}} }
 
-// Fügen Satzzeichen ans TEXTENDE ein, auch wenn ein altes Cursor-Position gespeichert ist.
-// Bereits angezeigte vorläufige Wörter behalten Vorrang, wenn gerade diktiert wird.
-function insertPunctuation(mark){
-  const before=dom.result.value.replace(/\s+$/u,'');
-  if(!before)return;
-  let core=before;
-  if(/[.,]$/u.test(core))core=core.slice(0,-1).replace(/\s+$/u,'');
-  const next=core+mark+' ';
-  if(dom.result.value===next)return;
-  snapshot();setText(next);clearSessionForEdit();
-}
-dom.period.onclick=()=>insertPunctuation('.');
-dom.comma.onclick=()=>insertPunctuation(',');
-dom.theme.onclick=()=>setTheme(!document.body.classList.contains('light'));
-dom.small.onclick=()=>{state.fontSize=Math.max(16,state.fontSize-2); document.documentElement.style.setProperty('--font-size',state.fontSize+'px'); save(KEY_SIZE,String(state.fontSize))};
-dom.big.onclick=()=>{state.fontSize=Math.min(36,state.fontSize+2); document.documentElement.style.setProperty('--font-size',state.fontSize+'px'); save(KEY_SIZE,String(state.fontSize))};
+dom.start.onclick = startRecord;
+dom.stop.onclick = () => stopRecord(false);
 
-dom.result.addEventListener('beforeinput',()=>{ if(!dom._typingTimer){ snapshot(); dom._typingTimer=setTimeout(()=>dom._typingTimer=null,900);} });
-dom.result.addEventListener('input',()=>{ setText(dom.result.value); clearSessionForEdit(); });
+dom.result.addEventListener('input', () => {
+  state.text = dom.result.value;
+  save(KEY_TEXT, state.text);
+  count();
+  if (state.session && recognition) {
+    state.session.invalid = true;
+    try { recognition.abort(); } catch (_) {}
+  }
+});
 
-dom.copy.onclick=async()=>{
-  const text=dom.result.value.trim(); if(!text){notice('Kein Text zum Kopieren.'); return}
-  try{ await navigator.clipboard.writeText(dom.result.value); notice('Text kopiert.'); }
-  catch(_){ dom.result.focus(); dom.result.select(); try{ document.execCommand('copy'); notice('Text kopiert.'); }catch(__){ notice('Bitte Text manuell kopieren.'); } }
-};
-dom.del.onclick=()=>{ const t=dom.result.value.replace(/\s+$/u,''); if(!t) return; snapshot(); setText(t.replace(/\S+$/u,'').replace(/\s+$/u,'')); clearSessionForEdit(); quietFeedback(dom.del,'Letztes Wort gelöscht.'); };
-dom.clear.onclick=()=>{ if(!dom.result.value) return; snapshot(); setText(''); clearSessionForEdit(); quietFeedback(dom.clear,'Text gelöscht.'); };
-dom.undo.onclick=()=>{ if(!state.undo.length) return; const prev=state.undo.pop(); setText(prev); dom.undo.disabled=!state.undo.length; clearSessionForEdit(); notice('Wiederhergestellt.'); };
-
-dom.read.onclick=()=>{
-  if(!('speechSynthesis' in window)){ notice('Vorlesen wird hier nicht unterstützt.'); return; }
-  if(state.speaking){ stopRead(); return; }
-  const text=dom.result.value.trim(); if(!text){ notice('Kein Text zum Vorlesen.'); return; }
-  if(state.phase==='recording') pauseRecord();
-  const u = new SpeechSynthesisUtterance(dom.result.value);
-  u.lang='de-DE'; u.rate=1; u.pitch=1;
-  u.onstart=()=>{ state.speaking=true; dom.read.classList.add('active'); dom.readLabel.textContent='Vorlesen stoppen'; status('Wiedergabe','recording','Text wird vorgelesen.'); };
-  const finish=()=>{ if(state.utterance!==u) return; stopRead(); if(state.phase==='paused') status('Pausiert','paused'); else if(state.phase==='recording') status('Hört zu …','recording'); else status('Bereit'); };
-  u.onend=finish; u.onerror=finish; state.utterance=u; window.speechSynthesis.speak(u);
+dom.copy.onclick = async () => {
+  const txt = dom.result.value.trim();
+  if (!txt) { notice('Kein Text vorhanden.'); return; }
+  try {
+    await navigator.clipboard.writeText(dom.result.value);
+    notice('Kopiert.');
+  } catch (_) {
+    dom.result.focus(); dom.result.select();
+    try { document.execCommand('copy'); notice('Kopiert.'); }
+    catch (__) { notice('Bitte manuell kopieren.'); }
+  }
 };
 
-dom.start.onclick=startRecord; dom.pause.onclick=pauseRecord; dom.stop.onclick=stopRecord;
+dom.clear.onclick = () => {
+  if (!dom.result.value) return;
+  commitText('');
+  if (state.session && recognition) {
+    state.session.invalid = true;
+    try { recognition.abort(); } catch (_) {}
+  }
+};
 
-dom.play.onclick=async()=>{ if(!state.audioURL) return; if(dom.audio.paused){ try{ await dom.audio.play(); }catch(_){ notice('Wiedergabe nicht möglich.'); } } else dom.audio.pause(); };
-[['play','#i-pause'],['pause','#i-play'],['ended','#i-play']].forEach(([ev,href])=>dom.audio.addEventListener(ev,()=>dom.playIconUse.setAttribute('href',href)));
-dom.audio.addEventListener('timeupdate',updatePlayPosition); dom.audio.addEventListener('durationchange',updatePlayPosition);
-dom.audio.addEventListener('loadedmetadata',()=>{ updatePlayPosition(); }); dom.audio.addEventListener('seeked',updatePlayPosition);
-function seekTo(sec){ if(!state.audioURL) return; try{ dom.audio.currentTime=Math.max(0,Math.min(duration(),sec)); }catch(_){ notice('Dieses Audioformat kann nicht gespult werden.'); } updatePlayPosition(); }
-dom.seek.oninput=()=>seekTo(duration()*Number(dom.seek.value)/1000);
-dom.back.onclick=()=>seekTo((dom.audio.currentTime||0)-10); dom.forward.onclick=()=>seekTo((dom.audio.currentTime||0)+10);
-// Der Browser nimmt je nach Gerät WebM oder M4A auf. Ein echtes MP3 wird erst
-// beim Herunterladen lokal umkodiert (niemals nur die Dateiendung umbenennen).
-// Die Bibliothek wird erst bei Bedarf geladen, damit Diktat und Aufnahme unverändert bleiben.
-let mp3LibraryPromise=null;
-let mp3DownloadBusy=false;
+dom.theme.onclick = () => setTheme(!document.body.classList.contains('light'));
+dom.small.onclick = () => { state.fontSize = Math.max(16, state.fontSize - 2); document.documentElement.style.setProperty('--font-size', state.fontSize + 'px'); save(KEY_SIZE, String(state.fontSize)); };
+dom.big.onclick = () => { state.fontSize = Math.min(36, state.fontSize + 2); document.documentElement.style.setProperty('--font-size', state.fontSize + 'px'); save(KEY_SIZE, String(state.fontSize)); };
+
+dom.play.onclick = async () => {
+  if (!state.audioURL || state.recording) return;
+  if (dom.audio.paused) {
+    try { await dom.audio.play(); } catch (_) { notice('Wiedergabe nicht möglich.'); }
+  } else {
+    dom.audio.pause();
+  }
+};
+[['play','#i-pause'],['pause','#i-play'],['ended','#i-play']].forEach(([ev,href]) =>
+  dom.audio.addEventListener(ev, () => dom.playIconUse.setAttribute('href', href))
+);
+dom.audio.addEventListener('timeupdate', updatePlayPosition);
+dom.audio.addEventListener('durationchange', updatePlayPosition);
+dom.audio.addEventListener('loadedmetadata', updatePlayPosition);
+dom.audio.addEventListener('seeked', updatePlayPosition);
+
+function seekTo(sec){
+  if (!state.audioURL) return;
+  try { dom.audio.currentTime = Math.max(0, Math.min(duration(), sec)); } catch (_) {}
+  updatePlayPosition();
+}
+dom.seek.oninput = () => seekTo(duration() * Number(dom.seek.value) / 1000);
+dom.back.onclick = () => seekTo((dom.audio.currentTime || 0) - 10);
+dom.forward.onclick = () => seekTo((dom.audio.currentTime || 0) + 10);
+
+// --- MP3-EXPORT (WIRD ERST NACH DEM STOPPEN BEIM KLICK GELADEN) ---
+let mp3LibraryPromise = null;
 function loadExternalScript(url){
-  return new Promise((resolve,reject)=>{
-    const script=document.createElement('script');
-    script.src=url; script.async=true; script.crossOrigin='anonymous';
-    script.onload=resolve;
-    script.onerror=()=>{script.remove();reject(new Error('Encoder nicht erreichbar'))};
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = url;
+    script.async = true;
+    script.crossOrigin = 'anonymous';
+    script.onload = resolve;
+    script.onerror = () => { script.remove(); reject(new Error('Encoder nicht erreichbar')); };
     document.head.append(script);
   });
 }
 async function loadMp3Library(){
-  if(window.lamejs?.Mp3Encoder)return;
-  if(!mp3LibraryPromise){
-    mp3LibraryPromise=(async()=>{
-      // Feste Bibliotheksversion; zwei Quellen für den Fall einer Netzwerksperre.
-      const sources=[
+  if (window.lamejs?.Mp3Encoder) return;
+  if (!mp3LibraryPromise) {
+    mp3LibraryPromise = (async () => {
+      const sources = [
         'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js',
         'https://unpkg.com/lamejs@1.2.1/lame.min.js'
       ];
-      for(const src of sources){
-        try{await loadExternalScript(src);if(window.lamejs?.Mp3Encoder)return}
-        catch(error){console.info('MP3-Encoder:',error)}
+      for (const src of sources) {
+        try {
+          await loadExternalScript(src);
+          if (window.lamejs?.Mp3Encoder) return;
+        } catch (_) {}
       }
-      throw new Error('MP3-Bibliothek nicht geladen. Bitte Internetverbindung prüfen.');
-    })().catch(error=>{mp3LibraryPromise=null;throw error});
+      throw new Error('MP3-Bibliothek nicht geladen. Internetverbindung prüfen.');
+    })().catch(err => { mp3LibraryPromise = null; throw err; });
   }
   await mp3LibraryPromise;
 }
-function downloadedMp3(blob){
-  const filename='Deutsch_Aufnahme_'+new Date().toISOString().slice(0,19).replace(/[T:]/g,'-')+'.mp3';
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download=filename;
-  document.body.append(a);a.click();a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),60000);
+function triggerMp3Download(blob){
+  const filename = 'Deutsch_Aufnahme_' + new Date().toISOString().slice(0,19).replace(/[T:]/g,'-') + '.mp3';
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
-async function encodeMp3FromRecording(blob,onProgress){
-  // Ein natives MPEG/MP3 braucht keine erneute Umwandlung.
-  if(/^audio\/(?:mpeg|mp3)(?:;|$)/i.test(blob.type))return blob;
+async function encodeMp3FromRecording(blob, onProgress){
+  if (/^audio\/(?:mpeg|mp3)(?:;|$)/i.test(blob.type)) return blob;
   await loadMp3Library();
-  const AudioCtx=window.AudioContext||window.webkitAudioContext;
-  if(!AudioCtx)throw new Error('Audio-Dekodierung wird auf diesem Gerät nicht unterstützt.');
-  const ctx=new AudioCtx();
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) throw new Error('Audio-Dekodierung wird auf diesem Gerät nicht unterstützt.');
+  const ctx = new AudioCtx();
   let audioBuffer;
-  try{
-    audioBuffer=await ctx.decodeAudioData(await blob.arrayBuffer());
-  }finally{
-    await ctx.close().catch(()=>{});
+  try {
+    audioBuffer = await ctx.decodeAudioData(await blob.arrayBuffer());
+  } finally {
+    await ctx.close().catch(() => {});
   }
-  const outputRate=22050; // Sprache: mono, 64 kbit/s, gute Verständlichkeit
-  const ratio=audioBuffer.sampleRate/outputRate;
-  const frames=Math.floor(audioBuffer.duration*outputRate);
-  const left=audioBuffer.getChannelData(0);
-  const right=audioBuffer.numberOfChannels>1?audioBuffer.getChannelData(1):null;
-  const encoder=new window.lamejs.Mp3Encoder(1,outputRate,64);
-  const parts=[];
-  const blockSize=1152;
-  for(let start=0,block=0;start<frames;start+=blockSize,block++){
-    const len=Math.min(blockSize,frames-start);
-    const samples=new Int16Array(len);
-    for(let j=0;j<len;j++){
-      const position=(start+j)*ratio;
-      const index=Math.min(left.length-1,Math.floor(position));
-      const next=Math.min(left.length-1,index+1);
-      const fraction=position-index;
-      let sample=left[index]+(left[next]-left[index])*fraction;
-      if(right)sample=(sample+right[index]+(right[next]-right[index])*fraction)*.5;
-      sample=Math.max(-1,Math.min(1,sample));
-      samples[j]=sample<0?Math.round(sample*32768):Math.round(sample*32767);
+  const outputRate = 22050;
+  const ratio = audioBuffer.sampleRate / outputRate;
+  const frames = Math.floor(audioBuffer.duration * outputRate);
+  const left = audioBuffer.getChannelData(0);
+  const right = audioBuffer.numberOfChannels > 1 ? audioBuffer.getChannelData(1) : null;
+  const encoder = new window.lamejs.Mp3Encoder(1, outputRate, 64);
+  const parts = [];
+  const blockSize = 1152;
+  for (let start = 0, block = 0; start < frames; start += blockSize, block++) {
+    const len = Math.min(blockSize, frames - start);
+    const samples = new Int16Array(len);
+    for (let j = 0; j < len; j++) {
+      const pos = (start + j) * ratio;
+      const idx = Math.min(left.length - 1, Math.floor(pos));
+      const next = Math.min(left.length - 1, idx + 1);
+      const frac = pos - idx;
+      let sample = left[idx] + (left[next] - left[idx]) * frac;
+      if (right) sample = (sample + right[idx] + (right[next] - right[idx]) * frac) * 0.5;
+      sample = Math.max(-1, Math.min(1, sample));
+      samples[j] = sample < 0 ? Math.round(sample * 32768) : Math.round(sample * 32767);
     }
-    const encoded=encoder.encodeBuffer(samples);
-    if(encoded.length)parts.push(new Uint8Array(encoded));
-    // Den Browser zwischen den Blöcken bedienbar lassen.
-    if(block%48===0){onProgress(Math.round(start/Math.max(1,frames)*100));await new Promise(resolve=>setTimeout(resolve,0))}
+    const encoded = encoder.encodeBuffer(samples);
+    if (encoded.length) parts.push(new Uint8Array(encoded));
+    if (block % 48 === 0) {
+      onProgress(Math.round(start / Math.max(1, frames) * 100));
+      await new Promise(r => setTimeout(r, 0));
+    }
   }
-  const rest=encoder.flush();if(rest.length)parts.push(new Uint8Array(rest));
-  const mp3=new Blob(parts,{type:'audio/mpeg'});
-  if(!mp3.size)throw new Error('Die MP3-Datei konnte nicht erstellt werden.');
+  const rest = encoder.flush();
+  if (rest.length) parts.push(new Uint8Array(rest));
+  const mp3 = new Blob(parts, { type:'audio/mpeg' });
+  if (!mp3.size) throw new Error('MP3-Datei konnte nicht erstellt werden.');
   return mp3;
 }
-dom.download.onclick=async()=>{
-  if(!state.audioBlob||mp3DownloadBusy)return;
-  const original=state.audioBlob; // Original auch bei Umwandlungsfehler behalten
-  mp3DownloadBusy=true;
-  dom.download.disabled=true;
+
+dom.download.onclick = async () => {
+  if (!state.audioBlob || state.recording || state.mp3Busy) return;
+  const original = state.audioBlob;
+  state.mp3Busy = true;
   dom.download.classList.add('mp3-busy');
-  const previousTitle=dom.download.title;
-  const previousLabel=dom.download.getAttribute('aria-label');
-  dom.download.title='MP3 wird erstellt …';
-  dom.download.setAttribute('aria-label','MP3 wird erstellt');
-  const previousStatus=dom.statusText.textContent;
-  const previousMode=state.phase;
-  try{
-    const mp3=await encodeMp3FromRecording(original,(pct)=>{
-      if(state.phase==='idle')status('MP3 '+pct+' %','done');
+  drawButtons();
+  refreshAudioButtons();
+  try {
+    const mp3 = await encodeMp3FromRecording(original, pct => {
+      if (!state.recording) status('MP3 ' + pct + ' %', 'done');
     });
-    downloadedMp3(mp3);
-    if(state.phase==='idle')status('Bereit','done');
-    // Kleine Bestätigung direkt auf der Schaltfläche statt eines Pop-ups.
-    quietFeedback(dom.download,'MP3 gespeichert.');
-  }catch(error){
-    console.error('MP3-Konvertierung:',error);
-    if(state.phase==='idle')status('MP3-Fehler','error');
-    notice('MP3 nicht verfügbar: '+(error.message||'Bitte erneut versuchen.'));
-  }finally{
-    mp3DownloadBusy=false;
+    triggerMp3Download(mp3);
+    status('Bereit', 'done');
+    notice('MP3 gespeichert.');
+  } catch (err) {
+    status('MP3-Fehler', 'error');
+    notice('MP3 nicht verfügbar: ' + (err.message || 'Bitte erneut versuchen.'));
+  } finally {
+    state.mp3Busy = false;
     dom.download.classList.remove('mp3-busy');
-    dom.download.title=previousTitle;
-    dom.download.setAttribute('aria-label',previousLabel||'Als MP3 herunterladen');
+    drawButtons();
     refreshAudioButtons();
-    if(state.phase!==previousMode&&state.phase==='recording')status('Hört zu …','recording');
   }
 };
-dom.remove.onclick=()=>{ if(!state.audioURL) return; clearAudio(); quietFeedback(dom.remove,'Tonaufnahme gelöscht.'); };
 
-function adjustViewport(){
-  const vv=window.visualViewport; if(!vv) return;
-  const keyboard=document.activeElement===dom.result && vv.height<window.innerHeight*0.72;
-  document.body.classList.toggle('keyboard-open', keyboard);
-}
-window.visualViewport?.addEventListener('resize',adjustViewport); window.addEventListener('resize',adjustViewport);
-window.addEventListener('pagehide',()=>{ clearTimeout(state.restart); if(state.session) try{state.session.engine.abort()}catch(_){ } clearRecorder(); stopRead(); });
+dom.remove.onclick = () => { if (state.audioURL) clearAudio(); };
+
+window.addEventListener('pagehide', () => {
+  clearTimeout(state.restart);
+  if (state.session && recognition) try { recognition.abort(); } catch (_) {}
+  if (state.media && state.media.state !== 'inactive') try { state.media.stop(); } catch (_) {}
+  stopTracks(state.stream);
+});
+
 (function init(){
-  const old=saved(KEY_TEXT); if(old!==null) setText(old); else count();
-  const size=Number(saved(KEY_SIZE)); if(size>=16 && size<=36){ state.fontSize=size; document.documentElement.style.setProperty('--font-size',size+'px'); }
-  const theme=saved(KEY_THEME); setTheme(theme==='1');
-  selectMode(saved(KEY_MODE)||'long');
-  drawButtons(); dom.undo.disabled=true; refreshAudioButtons(); updatePlayPosition(); adjustViewport();
-  status('Bereit');
-  if(!SpeechEngine){ dom.start.disabled=true; status('Nicht verfügbar','error','Bitte Chrome, Edge oder Safari prüfen.'); }
+  const old = saved(KEY_TEXT);
+  if (old !== null) commitText(old); else count();
+  const sz = Number(saved(KEY_SIZE));
+  if (sz >= 16 && sz <= 36) { state.fontSize = sz; document.documentElement.style.setProperty('--font-size', sz + 'px'); }
+  setTheme(saved(KEY_THEME) === '1');
+  drawButtons();
+  refreshAudioButtons();
+  updatePlayPosition();
+  if (!recognition) status('Nicht verfügbar', 'error');
 })();
 </script>
 </body>
